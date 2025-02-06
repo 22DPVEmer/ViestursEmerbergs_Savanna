@@ -10,6 +10,14 @@ namespace Savanna.GameEngine.Constants
             public const int GameTickMs = 500;
         }
 
+        public static class Movement
+        {
+            public const int DirectionCount = 8;
+            public const int DirectionBase = 3; // Used for calculating direction offsets
+            public const int MinDirectionOffset = -1;
+            public const int MaxDirectionOffset = 1;
+        }
+
         public static class Animal
         {
             public static class Antelope

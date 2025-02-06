@@ -82,8 +82,8 @@ namespace Savanna.GameEngine.Models
             int dy = Position.Y - lion.Position.Y;
 
             // If perfectly aligned, add slight randomness to break alignment
-            if (dx == 0) dx = Random.Next(0, 2) * 2 - 1; // -1 or 1
-            if (dy == 0) dy = Random.Next(0, 2) * 2 - 1; // -1 or 1
+            if (dx == 0) dx = Random.Next(GameConstants.Movement.MinDirectionOffset, GameConstants.Movement.MaxDirectionOffset + 1);
+            if (dy == 0) dy = Random.Next(GameConstants.Movement.MinDirectionOffset, GameConstants.Movement.MaxDirectionOffset + 1);
 
             // Try multiple escape directions in priority order
             var possibleMoves = new[]
@@ -94,8 +94,9 @@ namespace Savanna.GameEngine.Models
                 TryMove(field, -dx, -dy),                  // Opposite direction
                 TryMove(field, dx * 2, 0),                 // Horizontal escape
                 TryMove(field, 0, dy * 2),                 // Vertical escape
-                TryMove(field, Random.Next(-1, 2) * Speed, // Random escape as last resort
-                               Random.Next(-1, 2) * Speed)
+                TryMove(field,                             // Random escape as last resort
+                    Random.Next(GameConstants.Movement.MinDirectionOffset, GameConstants.Movement.MaxDirectionOffset + 1) * Speed,
+                    Random.Next(GameConstants.Movement.MinDirectionOffset, GameConstants.Movement.MaxDirectionOffset + 1) * Speed)
             };
 
             // Return the first valid move that increases distance from lion
@@ -135,15 +136,15 @@ namespace Savanna.GameEngine.Models
             int newX, newY;
             do
             {
-                int direction = Random.Next(8); // 8 possible directions
-                int dx = ((direction + 1) % 3 - 1) * Speed; // -1, 0, or 1 times Speed
-                int dy = ((direction / 3) - 1) * Speed;     // -1, 0, or 1 times Speed
+                int direction = Random.Next(GameConstants.Movement.DirectionCount);
+                int dx = ((direction + 1) % GameConstants.Movement.DirectionBase + GameConstants.Movement.MinDirectionOffset) * Speed;
+                int dy = ((direction / GameConstants.Movement.DirectionBase) + GameConstants.Movement.MinDirectionOffset) * Speed;
                 
                 newX = Position.X + dx;
                 newY = Position.Y + dy;
                 
                 attempts++;
-            } while (attempts < 8 && // Try all 8 directions
+            } while (attempts < GameConstants.Movement.DirectionCount && // Try all directions
                     (newX == Position.X && newY == Position.Y || // Same position
                      newX < 0 || newX >= field.Width ||         // Out of bounds X
                      newY < 0 || newY >= field.Height));        // Out of bounds Y
