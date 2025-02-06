@@ -1,0 +1,23 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v8.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v8.0": {
+      "Savanna.GameEngine/1.0.0": {
+        "runtime": {
+          "Savanna.GameEngine.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "Savanna.GameEngine/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}

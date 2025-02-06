@@ -1,0 +1,11 @@
+C:\Users\Dog star\Downloads\Savana\Savanna.GameEngine\bin\Debug\net8.0\Savanna.GameEngine.deps.json
+C:\Users\Dog star\Downloads\Savana\Savanna.GameEngine\bin\Debug\net8.0\Savanna.GameEngine.dll
+C:\Users\Dog star\Downloads\Savana\Savanna.GameEngine\bin\Debug\net8.0\Savanna.GameEngine.pdb
+C:\Users\Dog star\Downloads\Savana\Savanna.GameEngine\obj\Debug\net8.0\Savanna.GameEngine.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Dog star\Downloads\Savana\Savanna.GameEngine\obj\Debug\net8.0\Savanna.GameEngine.AssemblyInfoInputs.cache
+C:\Users\Dog star\Downloads\Savana\Savanna.GameEngine\obj\Debug\net8.0\Savanna.GameEngine.AssemblyInfo.cs
+C:\Users\Dog star\Downloads\Savana\Savanna.GameEngine\obj\Debug\net8.0\Savanna.GameEngine.csproj.CoreCompileInputs.cache
+C:\Users\Dog star\Downloads\Savana\Savanna.GameEngine\obj\Debug\net8.0\Savanna.GameEngine.dll
+C:\Users\Dog star\Downloads\Savana\Savanna.GameEngine\obj\Debug\net8.0\refint\Savanna.GameEngine.dll
+C:\Users\Dog star\Downloads\Savana\Savanna.GameEngine\obj\Debug\net8.0\Savanna.GameEngine.pdb
+C:\Users\Dog star\Downloads\Savana\Savanna.GameEngine\obj\Debug\net8.0\ref\Savanna.GameEngine.dll
