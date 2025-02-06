@@ -11,8 +11,6 @@ namespace Savanna.ConsoleApp.Rendering
     /// </summary>
     public class ConsoleFieldRenderer : IFieldRenderer
     {
-        private const char EmptyCell = '.';
-
         public char[,] RenderField(int width, int height, IReadOnlyList<Animal> animals)
         {
             var field = InitializeEmptyField(width, height);
@@ -25,7 +23,7 @@ namespace Savanna.ConsoleApp.Rendering
             var field = new char[height, width];
             for (int y = 0; y < height; y++)
                 for (int x = 0; x < width; x++)
-                    field[y, x] = EmptyCell;
+                    field[y, x] = GameConstants.Field.EmptyCell;
             return field;
         }
 

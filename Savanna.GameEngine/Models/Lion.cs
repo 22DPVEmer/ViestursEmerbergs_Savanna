@@ -15,9 +15,6 @@ namespace Savanna.GameEngine.Models
         // Shared Random instance to prevent same-tick values
         private static readonly Random Random = new Random();
         
-        // Reduced catch distance variation for more reliable catches
-        private static readonly double CatchDistanceVariation = 0.05;
-
         private const double CLOSE_DISTANCE = 1.5;
 
         /// <summary>
@@ -125,23 +122,6 @@ namespace Savanna.GameEngine.Models
                 Math.Clamp(newX, 0, field.Width - 1),
                 Math.Clamp(newY, 0, field.Height - 1)
             );
-        }
-
-        /// <summary>
-        /// Finds any Antelope within catching distance.
-        /// Uses LINQ to efficiently find the first catchable Antelope.
-        /// The catch distance is smaller than vision range.
-        /// </summary>
-        private Antelope? FindCatchableAntelope(GameField field)
-        {
-            // Use a more consistent catch distance
-            double catchDistance = GameConstants.Animal.Lion.CatchDistance + 
-                                 (Random.NextDouble() * CatchDistanceVariation);
-            
-            return field.Animals
-                .OfType<Antelope>()
-                .FirstOrDefault(a => a.IsAlive && 
-                    a.Position.DistanceTo(Position) <= catchDistance);
         }
 
         /// <summary>
