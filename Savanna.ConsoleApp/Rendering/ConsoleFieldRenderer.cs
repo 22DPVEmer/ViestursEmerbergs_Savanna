@@ -29,10 +29,22 @@ namespace Savanna.ConsoleApp.Rendering
 
         private void PlaceAnimalsOnField(char[,] field, IReadOnlyList<Animal> animals)
         {
+            int height = field.GetLength(0);
+            int width = field.GetLength(1);
+
             foreach (var animal in animals.Where(a => a.IsAlive))
             {
-                field[animal.Position.Y, animal.Position.X] = animal.Symbol;
+                if (IsValidPosition(animal.Position, width, height))
+                {
+                    field[animal.Position.Y, animal.Position.X] = animal.Symbol;
+                }
             }
+        }
+
+        private bool IsValidPosition(Position position, int width, int height)
+        {
+            return position.X >= 0 && position.X < width &&
+                   position.Y >= 0 && position.Y < height;
         }
     }
 } 

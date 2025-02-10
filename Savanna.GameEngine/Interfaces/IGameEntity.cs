@@ -11,6 +11,6 @@ namespace Savanna.GameEngine.Interfaces
         int Speed { get; }
         int VisionRange { get; }
         char Symbol { get; }
-        bool IsAlive { get; set; }
+        bool IsAlive { get; }
     }
 } 

@@ -26,14 +26,31 @@ namespace Savanna.GameEngine.Models
         }
 
         /// <summary>
-        /// Implements Lion movement behavior:
-        /// - If an Antelope is in vision range, chase it
-        /// - If no Antelopes are nearby, move randomly
+        /// Creates a reproduction manager specific to Lions.
         /// </summary>
-        public override void Move(GameField field)
+        protected override ReproductionManager CreateReproductionManager()
+        {
+            return new LionReproductionManager(this, this);
+        }
+
+        /// <summary>
+        /// Creates a new Lion offspring at the specified position.
+        /// Inherits configuration from the parent.
+        /// </summary>
+        public override IGameEntity Reproduce(Position position)
+        {
+            return new Lion(position, GetConfiguration());
+        }
+
+        /// <summary>
+        /// Implements the Lion's movement behavior.
+        /// Lions will chase nearby Antelopes within vision range,
+        /// or move randomly if no Antelopes are visible.
+        /// </summary>
+        protected override void PerformMove(GameField field)
         {
             var nearestAntelope = FindNearestAntelope(field);
-            if (nearestAntelope == null) 
+            if (nearestAntelope == null || Position.DistanceTo(nearestAntelope.Position) > VisionRange) 
             {
                 Position = CalculateRandomPosition(field);
                 return;
@@ -44,14 +61,14 @@ namespace Savanna.GameEngine.Models
         }
 
         /// <summary>
-        /// Implements Lion's hunting behavior:
-        /// Checks for nearby Antelopes within catch distance
-        /// and catches (removes) them if found.
+        /// Implements the Lion's special action - catching Antelopes.
+        /// If an Antelope is within catch distance, the Lion will
+        /// catch it, gaining health and causing the Antelope to die.
         /// </summary>
-        public override void PerformAction(GameField field)
+        protected override void PerformSpecialAction(GameField field)
         {
             var nearestAntelope = FindNearestAntelope(field);
-            if (nearestAntelope != null && Position.DistanceTo(nearestAntelope.Position) <= 1.0)
+            if (nearestAntelope != null && Position.DistanceTo(nearestAntelope.Position) <= GameConstants.Animal.Lion.CatchDistance)
             {
                 CatchAntelope(nearestAntelope);
             }
@@ -127,11 +144,13 @@ namespace Savanna.GameEngine.Models
         /// <summary>
         /// Catches an Antelope and leaps to its position.
         /// The leap represents the final attack move.
+        /// Updates the Lion's health and kills the Antelope.
         /// </summary>
         private void CatchAntelope(Antelope antelope)
         {
             Position = antelope.Position;
-            antelope.IsAlive = false;
+            antelope.Die();
+            IncreaseHealth(GameConstants.Health.PreyHealthValue);
         }
     }
 } 
