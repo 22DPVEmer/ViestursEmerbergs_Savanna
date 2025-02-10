@@ -43,10 +43,13 @@ namespace Savanna.GameEngine.Models
                 : CalculateRandomPosition(field);
         }
 
+        /// <summary>
+        /// Performs special actions specific to Antelopes.
+        /// Currently does nothing as Antelopes don't need special actions.
+        /// </summary>
         protected override void PerformSpecialAction(GameField field)
         {
-            // Antelopes don't have special actions yet
-            // Could be extended for features like grazing
+            throw new NotImplementedException(GameConstants.ErrorMessages.NoSpecialAction);
         }
 
         /// <summary>

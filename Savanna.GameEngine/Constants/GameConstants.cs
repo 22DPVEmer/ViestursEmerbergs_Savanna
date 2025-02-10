@@ -84,5 +84,28 @@ namespace Savanna.GameEngine.Constants
             public const string AddLionInstruction = "Press 'L' to add Lion";
             public const string QuitInstruction = "Press 'Q' to quit";
         }
+
+        /// <summary>
+        /// Constants related to test messages and assertions
+        /// </summary>
+        public static class TestMessages
+        {
+            public const string LionReproductionFormat = "Lions should be able to reproduce after {0} rounds. Lion1 health: {1}, Lion2 health: {2}, Distance: {3}";
+            public const string AntelopeReproductionFormat = "Antelopes should be able to reproduce at diagonal distance. Distance: {0}, Required: {1}";
+            public const string AntelopeOffspringFormat = "Antelope should be able to reproduce. Distance: {0}, Required: {1}, Health: {2}, Rounds near: {3}, Field animals count: {4}";
+        }
+
+        /// <summary>
+        /// Constants related to error messages and exceptions
+        /// </summary>
+        public static class ErrorMessages
+        {
+            public const string NoSpecialAction = "Antelopes do not have special actions implemented.";
+            public const string ParentConfigurationNotAvailable = "Parent configuration not available";
+            public const string UnknownAnimalType = "Unknown animal type: {0}";
+            public const string AntelopeNoReproduceBeyondDistance = "Antelope{0} should not reproduce beyond 2 tiles distance";
+            public const string AntelopeInsufficientHealth = "Antelope with insufficient health should not reproduce";
+            public const string ConsecutiveRoundsReset = "Consecutive rounds should reset when animals separate";
+        }
     }
 } 

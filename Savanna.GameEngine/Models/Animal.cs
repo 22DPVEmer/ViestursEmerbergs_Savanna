@@ -104,7 +104,11 @@ namespace Savanna.GameEngine.Models
                 DecreaseHealth(GameConstants.Reproduction.ReproductionHealthCost);
             }
 
-            PerformSpecialAction(field);
+            // Skip special action for Antelopes since they don't have any
+            if (!(this is Antelope))
+            {
+                PerformSpecialAction(field);
+            }
         }
 
         /// <summary>

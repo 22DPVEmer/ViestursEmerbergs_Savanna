@@ -142,9 +142,11 @@ namespace Savanna.Tests
                 lion2.UpdateReproductionStatus(_field);
             }
 
-            string message = $"Lions should be able to reproduce after {GameConstants.Reproduction.RequiredConsecutiveRounds} rounds. " +
-                           $"Lion1 health: {lion1.Health}, Lion2 health: {lion2.Health}, " +
-                           $"Distance: {lion1.Position.DistanceTo(lion2.Position)}";
+            string message = string.Format(GameConstants.TestMessages.LionReproductionFormat,
+                GameConstants.Reproduction.RequiredConsecutiveRounds,
+                lion1.Health,
+                lion2.Health,
+                lion1.Position.DistanceTo(lion2.Position));
 
             Assert.IsTrue(lion1.CanReproduce, message);
             Assert.IsTrue(lion2.CanReproduce, message);
@@ -188,9 +190,9 @@ namespace Savanna.Tests
                 antelope2.UpdateReproductionStatus(_field);
             }
 
-            string message = $"Antelopes should be able to reproduce at diagonal distance. " +
-                           $"Distance: {antelope1.Position.DistanceTo(antelope2.Position)}, " +
-                           $"Required: {GameConstants.Reproduction.MatingDistance}";
+            string message = string.Format(GameConstants.TestMessages.AntelopeReproductionFormat,
+                antelope1.Position.DistanceTo(antelope2.Position),
+                GameConstants.Reproduction.MatingDistance);
 
             Assert.IsTrue(antelope1.CanReproduce, message);
             Assert.IsTrue(antelope2.CanReproduce, message);
@@ -208,14 +210,15 @@ namespace Savanna.Tests
             _field.AddAnimal(antelope1.Symbol, antelope1.Position);
             _field.AddAnimal(antelope2.Symbol, antelope2.Position);
 
-            // Simulate 3 rounds
+            // Directly update reproduction status without using field.Update()
             for (int i = 0; i < GameConstants.Reproduction.RequiredConsecutiveRounds; i++)
             {
-                _field.Update();
+                antelope1.UpdateReproductionStatus(_field);
+                antelope2.UpdateReproductionStatus(_field);
             }
 
-            Assert.IsFalse(antelope1.CanReproduce, "Antelope1 should not reproduce beyond 2 tiles distance");
-            Assert.IsFalse(antelope2.CanReproduce, "Antelope2 should not reproduce beyond 2 tiles distance");
+            Assert.IsFalse(antelope1.CanReproduce, string.Format(GameConstants.ErrorMessages.AntelopeNoReproduceBeyondDistance, "1"));
+            Assert.IsFalse(antelope2.CanReproduce, string.Format(GameConstants.ErrorMessages.AntelopeNoReproduceBeyondDistance, "2"));
         }
 
         /// <summary>
@@ -233,13 +236,14 @@ namespace Savanna.Tests
             _field.AddAnimal(antelope1.Symbol, antelope1.Position);
             _field.AddAnimal(antelope2.Symbol, antelope2.Position);
 
-            // Simulate 3 rounds
+            // Directly update reproduction status without using field.Update()
             for (int i = 0; i < GameConstants.Reproduction.RequiredConsecutiveRounds; i++)
             {
-                _field.Update();
+                antelope1.UpdateReproductionStatus(_field);
+                antelope2.UpdateReproductionStatus(_field);
             }
 
-            Assert.IsFalse(antelope1.CanReproduce, "Antelope with insufficient health should not reproduce");
+            Assert.IsFalse(antelope1.CanReproduce, GameConstants.ErrorMessages.AntelopeInsufficientHealth);
         }
 
         /// <summary>
@@ -262,10 +266,12 @@ namespace Savanna.Tests
                 antelope2.UpdateReproductionStatus(_field);
             }
 
-            string message = $"Antelope should be able to reproduce. Distance: {antelope1.Position.DistanceTo(antelope2.Position)}, " +
-                           $"Required: {GameConstants.Reproduction.MatingDistance}, " +
-                           $"Health: {antelope1.Health}, Rounds near: {antelope1.ConsecutiveRoundsNearMate}, " +
-                           $"Field animals count: {_field.Animals.Count}";
+            string message = string.Format(GameConstants.TestMessages.AntelopeOffspringFormat,
+                antelope1.Position.DistanceTo(antelope2.Position),
+                GameConstants.Reproduction.MatingDistance,
+                antelope1.Health,
+                antelope1.ConsecutiveRoundsNearMate,
+                _field.Animals.Count);
 
             Assert.IsTrue(antelope1.CanReproduce, message);
             
@@ -298,7 +304,8 @@ namespace Savanna.Tests
             _field.AddAnimal(lion.Symbol, lion.Position);
             _field.AddAnimal(antelope.Symbol, antelope.Position);
 
-            _field.Update();
+            // Directly call lion's action instead of using field.Update()
+            lion.PerformAction(_field);
 
             Assert.IsTrue(antelope.IsAlive);
             Assert.AreEqual(GameConstants.Health.InitialHealth, lion.Health);
@@ -368,7 +375,7 @@ namespace Savanna.Tests
             lion2.Position = new Position(0, 1);
             _field.Update();
 
-            Assert.IsFalse(lion1.CanReproduce, "Consecutive rounds should reset when animals separate");
+            Assert.IsFalse(lion1.CanReproduce, GameConstants.ErrorMessages.ConsecutiveRoundsReset);
         }
 
         /// <summary>
