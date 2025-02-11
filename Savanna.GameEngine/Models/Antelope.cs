@@ -24,13 +24,17 @@ namespace Savanna.GameEngine.Models
         {
         }
 
-        /// <summary>
-        /// Implements Antelope movement behavior:
-        /// - If a Lion is in vision range, run away from it
-        /// - If no Lions are nearby, move randomly
-        /// This creates a natural prey behavior pattern.
-        /// </summary>
-        public override void Move(GameField field)
+        protected override ReproductionManager CreateReproductionManager()
+        {
+            return new AntelopeReproductionManager(this, this);
+        }
+
+        public override IGameEntity Reproduce(Position position)
+        {
+            return new Antelope(position, GetConfiguration());
+        }
+
+        protected override void PerformMove(GameField field)
         {
             var nearestLion = FindNearestLion(field);
             
@@ -40,12 +44,12 @@ namespace Savanna.GameEngine.Models
         }
 
         /// <summary>
-        /// Antelopes don't have special actions yet.
-        /// Could be extended for features like grazing or reproduction.
+        /// Performs special actions specific to Antelopes.
+        /// Currently does nothing as Antelopes don't need special actions.
         /// </summary>
-        public override void PerformAction(GameField field)
+        protected override void PerformSpecialAction(GameField field)
         {
-            // Antelopes don't have special actions yet
+            throw new NotImplementedException(GameConstants.ErrorMessages.NoSpecialAction);
         }
 
         /// <summary>

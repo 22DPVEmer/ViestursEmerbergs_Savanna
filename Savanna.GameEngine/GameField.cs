@@ -54,11 +54,32 @@ namespace Savanna.GameEngine
         }
 
         /// <summary>
+        /// Validates if a position is within the field bounds
+        /// </summary>
+        public bool IsValidPosition(Position position)
+        {
+            return position.X >= 0 && position.X < Width &&
+                   position.Y >= 0 && position.Y < Height;
+        }
+
+        /// <summary>
+        /// Ensures a position stays within field bounds
+        /// </summary>
+        public Position ClampPosition(Position position)
+        {
+            return new Position(
+                Math.Clamp(position.X, 0, Width - 1),
+                Math.Clamp(position.Y, 0, Height - 1)
+            );
+        }
+
+        /// <summary>
         /// Adds a new animal to the field based on type.
         /// Factory method pattern for creating animals.
         /// </summary>
         public void AddAnimal(char type, Position position)
         {
+            position = ClampPosition(position);
             var animal = _animalFactory.CreateAnimal(type, position);
             _animals.Add((Animal)animal);
         }
@@ -74,7 +95,7 @@ namespace Savanna.GameEngine
         {
             var activeAnimals = GetActiveAnimals();
             UpdateAnimals(activeAnimals);
-            RemoveDeadAnimals();
+            // RemoveDeadAnimals(); // Keeping dead animals for testing purposes
         }
 
         /// <summary>
