@@ -60,7 +60,7 @@ namespace Savanna.GameEngine.Models
             var config = (_parent as Lion)?.GetConfiguration();
             if (config == null)
             {
-                throw new InvalidOperationException("Parent configuration not available");
+                throw new InvalidOperationException(GameConstants.ErrorMessages.ParentConfigurationNotAvailable);
             }
             return config;
         }
