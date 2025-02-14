@@ -96,10 +96,9 @@ namespace Savanna.ConsoleApp.Game
                 );
                 _gameField.AddAnimal(type, position);
             }
-            catch (Exception ex)
+            catch (ArgumentException)
             {
-                Console.SetCursorPosition(0, _gameField.Height + 5);
-                Console.WriteLine($"Error adding animal: {ex.Message}");
+                // Silently ignore invalid animal types
             }
         }
 

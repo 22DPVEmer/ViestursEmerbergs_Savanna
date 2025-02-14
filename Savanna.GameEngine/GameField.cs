@@ -55,7 +55,7 @@ namespace Savanna.GameEngine
         /// </summary>
         public IEnumerable<IGameEntity> GetEntitiesAt(Position position)
         {
-            return _animals.Where(a => a.Position.Equals(position));
+            return _animals.Where(a => a.IsAlive && a.Position.Equals(position));
         }
 
         /// <summary>
@@ -63,7 +63,7 @@ namespace Savanna.GameEngine
         /// </summary>
         public IEnumerable<IGameEntity> GetEntitiesInRange(Position position, int range)
         {
-            return _animals.Where(a => a.Position.DistanceTo(position) <= range);
+            return _animals.Where(a => a.IsAlive && a.Position.DistanceTo(position) <= range);
         }
 
         /// <summary>
@@ -108,6 +108,9 @@ namespace Savanna.GameEngine
         /// </summary>
         public void AddAnimal(char type, Position position)
         {
+            // Clean up dead animals before checking capacity
+            _animals.RemoveAll(a => !a.IsAlive);
+            
             // Don't add more animals if we're at capacity
             if (IsAtCapacity())
             {
@@ -125,7 +128,7 @@ namespace Savanna.GameEngine
         /// </summary>
         public void Update()
         {
-            // Clean up dead animals periodically to prevent list from growing too large
+            // Clean up dead animals before processing updates
             _animals.RemoveAll(a => !a.IsAlive);
             
             var activeEntities = GetActiveEntities();
@@ -139,15 +142,21 @@ namespace Savanna.GameEngine
         /// </summary>
         private List<IGameEntity> GetActiveEntities()
         {
+            var maxEntities = Width * Height;
             var activeEntities = _animals.Where(a => a.IsAlive).ToList();
-            // Sanity check - we should never have more active entities than grid spaces
-            if (activeEntities.Count > Width * Height)
+            
+            // If we somehow got more entities than spaces, prioritize keeping the healthiest entities
+            if (activeEntities.Count > maxEntities)
             {
-                // If we somehow got more entities than spaces, keep only the first Width * Height entities
-                activeEntities = activeEntities.Take(Width * Height).ToList();
-                // Clean up the excess entities
+                activeEntities = activeEntities
+                    .OrderByDescending(a => (a as IHealthManageable)?.Health ?? 0)
+                    .Take(maxEntities)
+                    .ToList();
+                
+                // Remove any entities that didn't make the cut
                 _animals.RemoveAll(a => !activeEntities.Contains(a));
             }
+            
             return activeEntities;
         }
 

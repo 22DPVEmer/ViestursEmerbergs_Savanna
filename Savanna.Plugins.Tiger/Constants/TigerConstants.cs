@@ -14,7 +14,7 @@ namespace Savanna.Plugins.Tiger.Constants
         public static class Action
         {
             public const double CatchDistance = 1.5;
-            public const double PreyHealthValue = 10.0;
+            public const double PreyHealthValue = 5.0;
         }
 
         public static class Reproduction

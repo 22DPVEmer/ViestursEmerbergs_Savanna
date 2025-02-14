@@ -22,6 +22,7 @@ namespace Savanna.Tests
             public const string LionsNotReproduceWithLowHealth = "Lions should reproduce even with low health (current behavior)";
             public const string LionsReproduceCreateOffspring = "Lions should reproduce and create offspring (current behavior)";
             public const string AnimalsNearShouldReproduce = "Animals should reproduce after being near each other for required rounds (current behavior)";
+            public const string UnknownAnimalType = "Unknown animal type: {0}";
         }
     }
 } 

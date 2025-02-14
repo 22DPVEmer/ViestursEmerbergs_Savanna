@@ -172,10 +172,8 @@ namespace Savanna.GameEngine.Models
         {
             if (prey is IHealthManageable healthManageable && healthManageable.IsAlive)
             {
-                Console.WriteLine($"Catching prey at position: {prey.Position}"); // Debugging info
                 healthManageable.Die();
                 IncreaseHealth(GameConstants.Health.PreyHealthValue);
-                Console.WriteLine($"Lion's health after catching prey: {Health}"); // Debugging info
             }
         }
     }

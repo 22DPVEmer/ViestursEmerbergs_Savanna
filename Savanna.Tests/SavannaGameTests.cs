@@ -51,7 +51,7 @@ namespace Savanna.Tests
                     'A' => new Antelope(position, _antelopeConfig),
                     'T' => new Tiger(position, _tigerConfig),
                     'Z' => new Zebra(position, _zebraConfig),
-                    _ => throw new ArgumentException($"Unknown animal type: {type}")
+                    _ => throw new ArgumentException(string.Format(TestConstants.Messages.UnknownAnimalType, type))
                 };
             }
 
