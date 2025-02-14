@@ -1,10 +1,7 @@
 using Savanna.GameEngine.Constants;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Savanna.GameEngine.Models;
-using Savanna.GameEngine.Interfaces;
-using Savanna.GameEngine.Factory;
+using Savanna.Common.Models;
+using Savanna.Common.Interfaces;
 
 namespace Savanna.GameEngine
 {
@@ -13,13 +10,13 @@ namespace Savanna.GameEngine
     /// Manages the collection of animals and their state updates.
     /// Acts as the main coordinator for the game's logic.
     /// </summary>
-    public class GameField
+    public class GameField : IGameField
     {
         /// <summary>
         /// Private list of animals for internal management.
         /// Using List for efficient add/remove operations.
         /// </summary>
-        private readonly List<Animal> _animals;
+        private readonly List<IGameEntity> _animals;
         private readonly IAnimalFactory _animalFactory;
 
         /// <summary>
@@ -36,7 +33,7 @@ namespace Savanna.GameEngine
         /// Public read-only access to animals list.
         /// Returns AsReadOnly to prevent external modifications.
         /// </summary>
-        public IReadOnlyList<Animal> Animals => _animals.AsReadOnly();
+        public IReadOnlyList<IGameEntity> Animals => _animals.AsReadOnly();
 
         /// <summary>
         /// Creates a new game field with specified or default dimensions.
@@ -49,8 +46,32 @@ namespace Savanna.GameEngine
         {
             Width = width;
             Height = height;
-            _animals = new List<Animal>();
+            _animals = new List<IGameEntity>();
             _animalFactory = animalFactory ?? throw new ArgumentNullException(nameof(animalFactory));
+        }
+
+        /// <summary>
+        /// Gets all entities at a specific position
+        /// </summary>
+        public IEnumerable<IGameEntity> GetEntitiesAt(Position position)
+        {
+            return _animals.Where(a => a.Position.Equals(position));
+        }
+
+        /// <summary>
+        /// Gets all entities within a certain range of a position
+        /// </summary>
+        public IEnumerable<IGameEntity> GetEntitiesInRange(Position position, int range)
+        {
+            return _animals.Where(a => a.Position.DistanceTo(position) <= range);
+        }
+
+        /// <summary>
+        /// Gets all entities of a specific type within range
+        /// </summary>
+        public IEnumerable<T> GetEntitiesOfTypeInRange<T>(Position position, int range) where T : IGameEntity
+        {
+            return GetEntitiesInRange(position, range).OfType<T>();
         }
 
         /// <summary>
@@ -74,57 +95,93 @@ namespace Savanna.GameEngine
         }
 
         /// <summary>
+        /// Checks if the field has reached its maximum capacity
+        /// </summary>
+        public bool IsAtCapacity()
+        {
+            return _animals.Count(a => a.IsAlive) >= Width * Height;
+        }
+
+        /// <summary>
         /// Adds a new animal to the field based on type.
         /// Factory method pattern for creating animals.
         /// </summary>
         public void AddAnimal(char type, Position position)
         {
+            // Don't add more animals if we're at capacity
+            if (IsAtCapacity())
+            {
+                return;
+            }
+
             position = ClampPosition(position);
             var animal = _animalFactory.CreateAnimal(type, position);
-            _animals.Add((Animal)animal);
+            _animals.Add(animal);
         }
 
         /// <summary>
         /// Main update method called each game tick.
-        /// Follows the Command pattern for update sequence:
-        /// 1. Get list of active (living) animals
-        /// 2. Update their positions and actions
-        /// 3. Remove any dead animals
+        /// Updates positions and actions for all active entities.
         /// </summary>
         public void Update()
         {
-            var activeAnimals = GetActiveAnimals();
-            UpdateAnimals(activeAnimals);
-            // RemoveDeadAnimals(); // Keeping dead animals for testing purposes
+            // Clean up dead animals periodically to prevent list from growing too large
+            _animals.RemoveAll(a => !a.IsAlive);
+            
+            var activeEntities = GetActiveEntities();
+            UpdateEntities(activeEntities);
         }
 
         /// <summary>
-        /// Gets list of all living animals.
+        /// Gets list of all living entities.
         /// Uses LINQ for efficient filtering.
+        /// Ensures count cannot exceed field capacity.
         /// </summary>
-        private List<Animal> GetActiveAnimals() =>
-            _animals.Where(a => a.IsAlive).ToList();
+        private List<IGameEntity> GetActiveEntities()
+        {
+            var activeEntities = _animals.Where(a => a.IsAlive).ToList();
+            // Sanity check - we should never have more active entities than grid spaces
+            if (activeEntities.Count > Width * Height)
+            {
+                // If we somehow got more entities than spaces, keep only the first Width * Height entities
+                activeEntities = activeEntities.Take(Width * Height).ToList();
+                // Clean up the excess entities
+                _animals.RemoveAll(a => !activeEntities.Contains(a));
+            }
+            return activeEntities;
+        }
 
         /// <summary>
-        /// Updates all active animals in sequence.
-        /// Each animal:
-        /// 1. Moves based on its behavior
-        /// 2. Performs any special actions
+        /// Updates all active entities in sequence.
+        /// Each entity:
+        /// 1. Moves based on its behavior (if IMovable)
+        /// 2. Performs any special actions (if IActionable)
         /// </summary>
-        private void UpdateAnimals(List<Animal> activeAnimals)
+        private void UpdateEntities(List<IGameEntity> activeEntities)
         {
-            foreach (var animal in activeAnimals)
+            // Only try to use console if we're not in a test environment
+            try
             {
-                animal.Move(this);
-                animal.PerformAction(this);
+                Console.SetCursorPosition(0, Height + 5);
+                Console.WriteLine(string.Format(GameFieldConstants.Messages.UpdatingEntities, activeEntities.Count));
+            }
+            catch (IOException)
+            {
+                // Ignore console errors in test environment
+            }
+            
+            foreach (var entity in activeEntities)
+            {
+                if (entity is IMovable movable)
+                {
+                    movable.Move(this);
+                }
+                
+                if (entity is IActionable actionable)
+                {
+                    actionable.PerformAction(this);
+                }
             }
         }
-
-        /// <summary>
-        /// Removes dead animals from the field.
-        /// Called after updates to clean up caught Antelopes.
-        /// </summary>
-        private void RemoveDeadAnimals() =>
-            _animals.RemoveAll(a => !a.IsAlive);
     }
-} 
+}

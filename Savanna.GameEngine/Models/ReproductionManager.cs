@@ -1,5 +1,6 @@
 using Savanna.GameEngine.Constants;
-using Savanna.GameEngine.Interfaces;
+using Savanna.Common.Models;
+using Savanna.Common.Interfaces;
 
 namespace Savanna.GameEngine.Models
 {
@@ -16,7 +17,8 @@ namespace Savanna.GameEngine.Models
         
         public bool CanReproduce => 
             _consecutiveRoundsNearMate >= GameConstants.Reproduction.RequiredConsecutiveRounds &&
-            _healthManager.Health >= GameConstants.Reproduction.MinimumHealthToReproduce;
+            _healthManager.Health >= GameConstants.Reproduction.MinimumHealthToReproduce &&
+            _healthManager.IsAlive;
 
         protected ReproductionManager(IHealthManageable healthManager)
         {
@@ -24,7 +26,7 @@ namespace Savanna.GameEngine.Models
             _consecutiveRoundsNearMate = 0;
         }
 
-        public void UpdateReproductionStatus(GameField field)
+        public void UpdateReproductionStatus(IGameField field)
         {
             if (!_healthManager.IsAlive || 
                 _healthManager.Health < GameConstants.Reproduction.MinimumHealthToReproduce)
@@ -46,6 +48,6 @@ namespace Savanna.GameEngine.Models
 
         public abstract IGameEntity Reproduce(Position position);
 
-        protected abstract bool IsNearMate(GameField field);
+        protected abstract bool IsNearMate(IGameField field);
     }
 } 

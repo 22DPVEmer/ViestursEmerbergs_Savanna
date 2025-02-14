@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <EnableDynamicLoading>true</EnableDynamicLoading>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Savanna.Common\Savanna.Common.csproj" />
+    <ProjectReference Include="..\Savanna.Plugins\Savanna.Plugins.csproj" />
+  </ItemGroup>
+
+  <!-- Remove post-build event for tests -->
+  <!-- We'll add it back when running the actual application -->
+</Project>

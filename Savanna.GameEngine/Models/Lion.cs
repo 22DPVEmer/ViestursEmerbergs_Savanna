@@ -1,5 +1,6 @@
 using Savanna.GameEngine.Constants;
-using Savanna.GameEngine.Interfaces;
+using Savanna.Common.Models;
+using Savanna.Common.Interfaces;
 using System;
 using System.Linq;
 
@@ -43,114 +44,139 @@ namespace Savanna.GameEngine.Models
         }
 
         /// <summary>
-        /// Implements the Lion's movement behavior.
-        /// Lions will chase nearby Antelopes within vision range,
-        /// or move randomly if no Antelopes are visible.
-        /// </summary>
-        protected override void PerformMove(GameField field)
-        {
-            var nearestAntelope = FindNearestAntelope(field);
-            if (nearestAntelope == null || Position.DistanceTo(nearestAntelope.Position) > VisionRange) 
-            {
-                Position = CalculateRandomPosition(field);
-                return;
-            }
-
-            // Always move towards Antelope if we can see it
-            Position = CalculateChasePosition(field, nearestAntelope);
-        }
-
-        /// <summary>
-        /// Implements the Lion's special action - catching Antelopes.
-        /// If an Antelope is within catch distance, the Lion will
-        /// catch it, gaining health and causing the Antelope to die.
-        /// </summary>
-        protected override void PerformSpecialAction(GameField field)
-        {
-            var nearestAntelope = FindNearestAntelope(field);
-            if (nearestAntelope != null && Position.DistanceTo(nearestAntelope.Position) <= GameConstants.Animal.Lion.CatchDistance)
-            {
-                CatchAntelope(nearestAntelope);
-            }
-        }
-
-        /// <summary>
-        /// Finds the nearest living Antelope on the field.
+        /// Finds the nearest living prey animal on the field.
         /// Uses LINQ for efficient filtering and ordering.
-        /// Returns null if no Antelopes are alive.
+        /// Returns null if no prey is alive.
         /// </summary>
-        private Antelope? FindNearestAntelope(GameField field) =>
-            field.Animals
-                .OfType<Antelope>()
+        private IGameEntity? FindNearestPrey(IGameField field)
+        {
+            return field.GetEntitiesOfTypeInRange<Antelope>(Position, VisionRange)
                 .Where(a => a.IsAlive)
                 .OrderBy(a => a.Position.DistanceTo(Position))
                 .FirstOrDefault();
+        }
 
         /// <summary>
-        /// Calculates the best position to chase an Antelope:
-        /// 1. Calculate direction vector to Antelope
+        /// Implements the Lion's movement behavior.
+        /// Lions will chase nearby prey within vision range,
+        /// or move randomly if no prey is visible.
+        /// </summary>
+        protected override void PerformMove(IGameField field)
+        {
+            var prey = FindNearestPrey(field);
+            if (prey != null && IsPreyInRange(prey))
+            {
+                var oldPosition = Position;
+                
+                // If we're already at the prey's position, catch it without moving
+                if (Position.Equals(prey.Position))
+                {
+                    CatchPrey(prey);
+                    return;
+                }
+
+                Position = CalculateChasePosition(field, prey);
+                
+                // Try to catch prey before applying movement cost
+                if (prey.Position.DistanceTo(Position) <= CLOSE_DISTANCE)
+                {
+                    CatchPrey(prey);
+                }
+            }
+            else
+            {
+                // Check for potential mates before moving randomly
+                var nearbyMate = field.GetEntitiesOfTypeInRange<Lion>(Position, (int)GameConstants.Reproduction.MatingDistance)
+                    .Where(l => l.IsAlive && l != this)
+                    .FirstOrDefault();
+
+                if (nearbyMate != null)
+                {
+                    // Stay close to mate if we're already within mating distance
+                    var currentDistance = Position.DistanceTo(nearbyMate.Position);
+                    if (currentDistance <= GameConstants.Reproduction.MatingDistance)
+                    {
+                        // Don't move if we're at a good distance
+                        return;
+                    }
+                    // Move closer to mate if we're drifting apart
+                    Position = CalculateChasePosition(field, nearbyMate);
+                }
+                else
+                {
+                    Position = CalculateRandomPosition(field);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Implements the Lion's special action - catching prey.
+        /// If prey is within catch distance, the Lion will
+        /// catch it, gaining health and causing the prey to die.
+        /// </summary>
+        protected override void PerformSpecialAction(IGameField field)
+        {
+            // Special action is now handled in PerformMove
+        }
+
+        private bool IsPreyInRange(IGameEntity prey)
+        {
+            return prey.Position.DistanceTo(Position) <= VisionRange;
+        }
+
+        /// <summary>
+        /// Calculates the best position to chase prey:
+        /// 1. Calculate direction vector to prey
         /// 2. Normalize direction using Math.Sign
         /// 3. Multiply by speed to get movement distance
         /// 4. Ensure new position is within field bounds
         /// </summary>
-        private Position CalculateChasePosition(GameField field, Antelope antelope)
+        private Position CalculateChasePosition(IGameField field, IGameEntity prey)
         {
-            double distance = Position.DistanceTo(antelope.Position);
-            
-            // When very close, move directly to antelope
-            if (distance <= CLOSE_DISTANCE)
+            if (prey.Position.DistanceTo(Position) <= CLOSE_DISTANCE)
             {
-                return antelope.Position;
+                return prey.Position;
             }
 
-            // Calculate direction to antelope
-            int dx = antelope.Position.X - Position.X;
-            int dy = antelope.Position.Y - Position.Y;
+            int dx = Math.Sign(prey.Position.X - Position.X);
+            int dy = Math.Sign(prey.Position.Y - Position.Y);
 
-            // Always move towards the antelope
-            int newX = Position.X + Math.Sign(dx) * Speed;
-            int newY = Position.Y + Math.Sign(dy) * Speed;
-
-            // Ensure we stay within bounds
-            return new Position(
-                Math.Clamp(newX, 0, field.Width - 1),
-                Math.Clamp(newY, 0, field.Height - 1)
+            var newPosition = new Position(
+                Position.X + dx * Speed,
+                Position.Y + dy * Speed
             );
+
+            return field.ClampPosition(newPosition);
         }
 
         /// <summary>
         /// Calculates a random new position for natural movement.
-        /// Used when no Antelopes are nearby.
+        /// Used when no prey are nearby.
         /// 1. Generate random X,Y offsets within speed range
         /// 2. Add to current position
         /// 3. Ensure new position is within field bounds
         /// </summary>
-        private Position CalculateRandomPosition(GameField field)
+        private Position CalculateRandomPosition(IGameField field)
         {
-            // Ensure some movement always happens
-            int newX, newY;
-            do
-            {
-                newX = Position.X + Random.Next(-Speed, Speed + 1);
-                newY = Position.Y + Random.Next(-Speed, Speed + 1);
-            } while (newX == Position.X && newY == Position.Y);
-
-            return new Position(
-                Math.Clamp(newX, 0, field.Width - 1),
-                Math.Clamp(newY, 0, field.Height - 1)
-            );
+            int newX = Position.X + Random.Next(-Speed, Speed + 1);
+            int newY = Position.Y + Random.Next(-Speed, Speed + 1);
+            return field.ClampPosition(new Position(newX, newY));
         }
 
         /// <summary>
-        /// Catches an Antelope and leaps to its position.
+        /// Catches prey and leaps to its position.
         /// The leap represents the final attack move.
-        /// Updates the Lion's health and kills the Antelope.
+        /// Updates the Lion's health and kills the prey.
         /// </summary>
-        private void CatchAntelope(Antelope antelope)
+        private void CatchPrey(IGameEntity prey)
         {
-            Position = antelope.Position;
-            antelope.Die();
-            IncreaseHealth(GameConstants.Health.PreyHealthValue);
+            if (prey is IHealthManageable healthManageable && healthManageable.IsAlive)
+            {
+                Console.WriteLine($"Catching prey at position: {prey.Position}"); // Debugging info
+                healthManageable.Die();
+                IncreaseHealth(GameConstants.Health.PreyHealthValue);
+                Console.WriteLine($"Lion's health after catching prey: {Health}"); // Debugging info
+            }
         }
     }
 } 

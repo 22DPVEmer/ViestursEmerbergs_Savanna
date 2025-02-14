@@ -4,6 +4,8 @@ using Savanna.GameEngine;
 using Savanna.GameEngine.Constants;
 using Savanna.GameEngine.Factory;
 using Savanna.GameEngine.Models;
+using Savanna.Common.Interfaces;
+using Savanna.Common.Models;
 
 namespace Savanna.ConsoleApp.Game
 {
@@ -12,20 +14,16 @@ namespace Savanna.ConsoleApp.Game
     /// </summary>
     public class GameRunner
     {
-        private readonly GameField _gameField;
+        private readonly IGameField _gameField;
         private readonly IFieldRenderer _fieldRenderer;
         private readonly GameDisplay _display;
         private static readonly Random Random = new();
 
-        public GameRunner()
+        public GameRunner(IGameField gameField, IFieldRenderer fieldRenderer)
         {
-            // Create dependencies
-            var animalFactory = new AnimalFactory();
-            _fieldRenderer = new ConsoleFieldRenderer();
+            _gameField = gameField;
+            _fieldRenderer = fieldRenderer;
             _display = new GameDisplay();
-            
-            // Create game field with dependencies
-            _gameField = new GameField(animalFactory);
         }
 
         /// <summary>
@@ -33,11 +31,15 @@ namespace Savanna.ConsoleApp.Game
         /// </summary>
         public void Run()
         {
+            Console.CursorVisible = false;  // Hide cursor for better visualization
+            
             // Show initial instructions to the user
             _display.DisplayInstructions();
             
             // Start the main game loop
             RunGameLoop();
+
+            Console.CursorVisible = true;  // Restore cursor visibility on exit
         }
 
         /// <summary>
@@ -68,20 +70,16 @@ namespace Savanna.ConsoleApp.Game
         /// </summary>
         private bool HandleUserInput()
         {
-            var key = Console.ReadKey(true).Key;
-            switch (key)
+            var key = Console.ReadKey(true).KeyChar;
+            if (key == 'q' || key == 'Q')
             {
-                case ConsoleKey.A: // Add Antelope
-                    AddRandomAnimal(GameConstants.Animal.Antelope.Symbol);
-                    return true;
-                case ConsoleKey.L: // Add Lion
-                    AddRandomAnimal(GameConstants.Animal.Lion.Symbol);
-                    return true;
-                case ConsoleKey.Q: // Quit game
-                    return false;
-                default:
-                    return true;
+                return false;
             }
+
+            // Add any animal type, including plugins
+            AddRandomAnimal(char.ToUpper(key));
+
+            return true;
         }
 
         /// <summary>
@@ -89,12 +87,20 @@ namespace Savanna.ConsoleApp.Game
         /// </summary>
         private void AddRandomAnimal(char type)
         {
-            // Generate random position within field bounds
-            var position = new Position(
-                Random.Next(_gameField.Width),
-                Random.Next(_gameField.Height)
-            );
-            _gameField.AddAnimal(type, position);
+            try
+            {
+                // Generate random position within field bounds
+                var position = new Position(
+                    Random.Next(_gameField.Width),
+                    Random.Next(_gameField.Height)
+                );
+                _gameField.AddAnimal(type, position);
+            }
+            catch (Exception ex)
+            {
+                Console.SetCursorPosition(0, _gameField.Height + 5);
+                Console.WriteLine($"Error adding animal: {ex.Message}");
+            }
         }
 
         /// <summary>

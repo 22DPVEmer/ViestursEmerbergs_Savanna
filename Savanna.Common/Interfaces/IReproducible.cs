@@ -1,6 +1,6 @@
-using Savanna.GameEngine.Models;
+using Savanna.Common.Models;
 
-namespace Savanna.GameEngine.Interfaces
+namespace Savanna.Common.Interfaces
 {
     /// <summary>
     /// Defines reproduction-related behaviors for game entities
@@ -9,7 +9,7 @@ namespace Savanna.GameEngine.Interfaces
     {
         int ConsecutiveRoundsNearMate { get; }
         bool CanReproduce { get; }
-        void UpdateReproductionStatus(GameField field);
+        void UpdateReproductionStatus(IGameField field);
         IGameEntity Reproduce(Position position);
     }
 } 

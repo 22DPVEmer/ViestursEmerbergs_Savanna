@@ -1,5 +1,6 @@
 using Savanna.GameEngine.Constants;
-using Savanna.GameEngine.Interfaces;
+using Savanna.Common.Models;
+using Savanna.Common.Interfaces;
 using System.Linq;
 using System;
 
@@ -11,14 +12,14 @@ namespace Savanna.GameEngine.Models
     /// </summary>
     public class AntelopeReproductionManager : ReproductionManager
     {
-        private readonly Animal _parent;
+        private readonly Antelope _parent;
 
         /// <summary>
         /// Initializes a new instance of AntelopeReproductionManager.
         /// </summary>
         /// <param name="parent">The parent Antelope this manager belongs to</param>
         /// <param name="healthManager">The health manager to check reproduction eligibility</param>
-        public AntelopeReproductionManager(Animal parent, IHealthManageable healthManager) 
+        public AntelopeReproductionManager(Antelope parent, IHealthManageable healthManager) 
             : base(healthManager)
         {
             _parent = parent;
@@ -29,12 +30,11 @@ namespace Savanna.GameEngine.Models
         /// Looks for other living Antelopes within the mating distance.
         /// </summary>
         /// <returns>True if a potential mate is found within range</returns>
-        protected override bool IsNearMate(GameField field)
+        protected override bool IsNearMate(IGameField field)
         {
-            return field.Animals
-                .OfType<Antelope>()
+            return field.GetEntitiesOfTypeInRange<Antelope>(_parent.Position, (int)GameConstants.Reproduction.MatingDistance)
                 .Where(a => a.IsAlive && a != _parent)
-                .Any(a => a.Position.DistanceTo(_parent.Position) <= GameConstants.Reproduction.MatingDistance);
+                .Any();
         }
 
         /// <summary>
@@ -60,7 +60,7 @@ namespace Savanna.GameEngine.Models
         /// </summary>
         private IAnimalConfiguration GetParentConfiguration()
         {
-            var config = (_parent as Antelope)?.GetConfiguration();
+            var config = _parent.GetConfiguration();
             if (config == null)
             {
                 throw new InvalidOperationException(GameConstants.ErrorMessages.ParentConfigurationNotAvailable);
