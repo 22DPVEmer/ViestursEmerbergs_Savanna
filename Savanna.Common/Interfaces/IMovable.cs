@@ -1,4 +1,6 @@
-namespace Savanna.GameEngine.Interfaces
+using Savanna.Common.Interfaces;
+
+namespace Savanna.Common.Interfaces
 {
     /// <summary>
     /// Defines movement behavior for game entities
@@ -8,6 +10,6 @@ namespace Savanna.GameEngine.Interfaces
         /// <summary>
         /// Calculates and performs movement within the game field
         /// </summary>
-        void Move(GameField field);
+        void Move(IGameField field);
     }
 } 

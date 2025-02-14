@@ -1,5 +1,6 @@
 using Savanna.GameEngine.Constants;
-using Savanna.GameEngine.Interfaces;
+using Savanna.Common.Models;
+using Savanna.Common.Interfaces;
 using System.Linq;
 using System;
 
@@ -10,14 +11,14 @@ namespace Savanna.GameEngine.Models
     /// </summary>
     public class LionReproductionManager : ReproductionManager
     {
-        private readonly Animal _parent;
+        private readonly Lion _parent;
 
         /// <summary>
         /// Initializes a new reproduction manager for a Lion
         /// </summary>
         /// <param name="parent">The parent Lion this manager belongs to</param>
         /// <param name="healthManager">The health manager to check reproduction eligibility</param>
-        public LionReproductionManager(Animal parent, IHealthManageable healthManager) 
+        public LionReproductionManager(Lion parent, IHealthManageable healthManager) 
             : base(healthManager)
         {
             _parent = parent;
@@ -27,12 +28,11 @@ namespace Savanna.GameEngine.Models
         /// Checks if there is a potential mate nearby within mating distance
         /// </summary>
         /// <returns>True if a potential mate is found within range</returns>
-        protected override bool IsNearMate(GameField field)
+        protected override bool IsNearMate(IGameField field)
         {
-            return field.Animals
-                .OfType<Lion>()
+            return field.GetEntitiesOfTypeInRange<Lion>(_parent.Position, (int)GameConstants.Reproduction.MatingDistance)
                 .Where(l => l.IsAlive && l != _parent)
-                .Any(l => l.Position.DistanceTo(_parent.Position) <= GameConstants.Reproduction.MatingDistance);
+                .Any();
         }
 
         /// <summary>
@@ -57,7 +57,7 @@ namespace Savanna.GameEngine.Models
         /// <exception cref="InvalidOperationException">Thrown when parent configuration is not available</exception>
         private IAnimalConfiguration GetParentConfiguration()
         {
-            var config = (_parent as Lion)?.GetConfiguration();
+            var config = _parent.GetConfiguration();
             if (config == null)
             {
                 throw new InvalidOperationException(GameConstants.ErrorMessages.ParentConfigurationNotAvailable);

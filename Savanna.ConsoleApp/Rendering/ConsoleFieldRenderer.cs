@@ -1,50 +1,40 @@
-using Savanna.GameEngine.Constants;
-using Savanna.GameEngine.Models;
 using System.Collections.Generic;
-using System.Linq;
+using Savanna.GameEngine.Constants;
+using Savanna.Common.Interfaces;
 
 namespace Savanna.ConsoleApp.Rendering
 {
     /// <summary>
-    /// Default console-based field renderer.
-    /// Handles the visual representation of the game field.
+    /// Renders the game field for console display
     /// </summary>
     public class ConsoleFieldRenderer : IFieldRenderer
     {
-        public char[,] RenderField(int width, int height, IReadOnlyList<Animal> animals)
-        {
-            var field = InitializeEmptyField(width, height);
-            PlaceAnimalsOnField(field, animals);
-            return field;
-        }
-
-        private char[,] InitializeEmptyField(int width, int height)
+        /// <summary>
+        /// Creates a 2D array representing the field state
+        /// </summary>
+        public char[,] RenderField(int width, int height, IReadOnlyList<IGameEntity> animals)
         {
             var field = new char[height, width];
+
+            // Fill field with empty cells
             for (int y = 0; y < height; y++)
-                for (int x = 0; x < width; x++)
-                    field[y, x] = GameConstants.Field.EmptyCell;
-            return field;
-        }
-
-        private void PlaceAnimalsOnField(char[,] field, IReadOnlyList<Animal> animals)
-        {
-            int height = field.GetLength(0);
-            int width = field.GetLength(1);
-
-            foreach (var animal in animals.Where(a => a.IsAlive))
             {
-                if (IsValidPosition(animal.Position, width, height))
+                for (int x = 0; x < width; x++)
+                {
+                    field[y, x] = GameConstants.Field.EmptyCell;
+                }
+            }
+
+            // Place animals on the field
+            foreach (var animal in animals)
+            {
+                if (animal.IsAlive)
                 {
                     field[animal.Position.Y, animal.Position.X] = animal.Symbol;
                 }
             }
-        }
 
-        private bool IsValidPosition(Position position, int width, int height)
-        {
-            return position.X >= 0 && position.X < width &&
-                   position.Y >= 0 && position.Y < height;
+            return field;
         }
     }
 } 

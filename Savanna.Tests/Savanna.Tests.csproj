@@ -22,6 +22,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Savanna.GameEngine\Savanna.GameEngine.csproj" />
+    <ProjectReference Include="..\Savanna.Common\Savanna.Common.csproj" />
+    <ProjectReference Include="..\Savanna.Plugins\Savanna.Plugins.csproj" />
+    <ProjectReference Include="..\Savanna.Plugins.Tiger\Savanna.Plugins.Tiger.csproj" />
+    <ProjectReference Include="..\Savanna.Plugins.Zebra\Savanna.Plugins.Zebra.csproj" />
   </ItemGroup>
 
 </Project>

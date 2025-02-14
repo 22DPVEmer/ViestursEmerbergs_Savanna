@@ -1,5 +1,6 @@
 using Savanna.GameEngine.Constants;
-using Savanna.GameEngine.Interfaces;
+using Savanna.Common.Models;
+using Savanna.Common.Interfaces;
 using System;
 using System.Linq;
 
@@ -34,7 +35,7 @@ namespace Savanna.GameEngine.Models
             return new Antelope(position, GetConfiguration());
         }
 
-        protected override void PerformMove(GameField field)
+        protected override void PerformMove(IGameField field)
         {
             var nearestLion = FindNearestLion(field);
             
@@ -47,7 +48,7 @@ namespace Savanna.GameEngine.Models
         /// Performs special actions specific to Antelopes.
         /// Currently does nothing as Antelopes don't need special actions.
         /// </summary>
-        protected override void PerformSpecialAction(GameField field)
+        protected override void PerformSpecialAction(IGameField field)
         {
             throw new NotImplementedException(GameConstants.ErrorMessages.NoSpecialAction);
         }
@@ -57,9 +58,8 @@ namespace Savanna.GameEngine.Models
         /// Uses LINQ for efficient filtering and ordering.
         /// Returns null if no Lions are alive.
         /// </summary>
-        private Lion? FindNearestLion(GameField field) =>
-            field.Animals
-                .OfType<Lion>()
+        private Lion? FindNearestLion(IGameField field) =>
+            field.GetEntitiesOfTypeInRange<Lion>(Position, VisionRange)
                 .Where(l => l.IsAlive)
                 .OrderBy(l => l.Position.DistanceTo(Position))
                 .FirstOrDefault();
@@ -79,7 +79,7 @@ namespace Savanna.GameEngine.Models
         /// 3. Multiply by speed to get movement distance
         /// 4. Ensure new position is within field bounds
         /// </summary>
-        private Position CalculateEscapePosition(GameField field, Lion lion)
+        private Position CalculateEscapePosition(IGameField field, Lion lion)
         {
             // Calculate base direction away from lion
             int dx = Position.X - lion.Position.X;
@@ -115,15 +115,12 @@ namespace Savanna.GameEngine.Models
             return possibleMoves.First();
         }
 
-        private Position TryMove(GameField field, int dx, int dy)
+        private Position TryMove(IGameField field, int dx, int dy)
         {
             int newX = Position.X + Math.Sign(dx) * Speed;
             int newY = Position.Y + Math.Sign(dy) * Speed;
 
-            return new Position(
-                Math.Clamp(newX, 0, field.Width - 1),
-                Math.Clamp(newY, 0, field.Height - 1)
-            );
+            return field.ClampPosition(new Position(newX, newY));
         }
 
         /// <summary>
@@ -133,7 +130,7 @@ namespace Savanna.GameEngine.Models
         /// 2. Add to current position
         /// 3. Ensure new position is within field bounds
         /// </summary>
-        private Position CalculateRandomPosition(GameField field)
+        private Position CalculateRandomPosition(IGameField field)
         {
             // Try to ensure movement even near borders
             int attempts = 0;
@@ -150,13 +147,9 @@ namespace Savanna.GameEngine.Models
                 attempts++;
             } while (attempts < GameConstants.Movement.DirectionCount && // Try all directions
                     (newX == Position.X && newY == Position.Y || // Same position
-                     newX < 0 || newX >= field.Width ||         // Out of bounds X
-                     newY < 0 || newY >= field.Height));        // Out of bounds Y
+                     !field.IsValidPosition(new Position(newX, newY)))); // Out of bounds
 
-            return new Position(
-                Math.Clamp(newX, 0, field.Width - 1),
-                Math.Clamp(newY, 0, field.Height - 1)
-            );
+            return field.ClampPosition(new Position(newX, newY));
         }
     }
 } 

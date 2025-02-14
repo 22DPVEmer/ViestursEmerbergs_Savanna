@@ -1,6 +1,8 @@
 using System;
-using Savanna.GameEngine.Interfaces;
 using Savanna.GameEngine.Constants;
+using Savanna.Common.Models;
+using Savanna.Common.Interfaces;
+using System.Linq;
 
 namespace Savanna.GameEngine.Models
 {
@@ -9,7 +11,7 @@ namespace Savanna.GameEngine.Models
     /// Provides common properties and behaviors that all animals share.
     /// Uses the Template Method pattern for movement and actions.
     /// </summary>
-    public abstract class Animal : IGameEntity, IHealthManageable, IReproducible
+    public abstract class Animal : IGameEntity, IHealthManageable, IReproducible, IMovable, IActionable
     {
         private readonly IAnimalConfiguration _configuration;
         private readonly HealthManager _healthManager;
@@ -73,7 +75,7 @@ namespace Savanna.GameEngine.Models
         /// Abstract method for movement behavior.
         /// Each animal type must implement its own movement logic.
         /// </summary>
-        public virtual void Move(GameField field)
+        public virtual void Move(IGameField field)
         {
             if (!IsAlive) return;
 
@@ -84,24 +86,33 @@ namespace Savanna.GameEngine.Models
         /// <summary>
         /// Template method for actual movement implementation
         /// </summary>
-        protected abstract void PerformMove(GameField field);
+        protected abstract void PerformMove(IGameField field);
 
         /// <summary>
         /// Abstract method for special actions.
         /// Each animal type must implement its own action logic
         /// (e.g., Lions catching Antelopes).
         /// </summary>
-        public virtual void PerformAction(GameField field)
+        public virtual void PerformAction(IGameField field)
         {
             if (!IsAlive) return;
 
             _reproductionManager.UpdateReproductionStatus(field);
             
-            if (_reproductionManager.CanReproduce)
+            // Only allow one animal in a pair to handle reproduction
+            if (_reproductionManager.CanReproduce && 
+                _healthManager.Health >= GameConstants.Reproduction.MinimumHealthToReproduce)
             {
-                var offspring = _reproductionManager.Reproduce(Position);
-                field.AddAnimal(offspring.Symbol, offspring.Position);
-                DecreaseHealth(GameConstants.Reproduction.ReproductionHealthCost);
+                var mate = field.GetEntitiesInRange(Position, (int)GameConstants.Reproduction.MatingDistance)
+                    .Where(e => e.Symbol == Symbol && e.IsAlive && e != this)
+                    .FirstOrDefault();
+
+                if (mate != null && Position.X <= mate.Position.X && Position.Y <= mate.Position.Y)
+                {
+                    var offspring = _reproductionManager.Reproduce(Position);
+                    field.AddAnimal(offspring.Symbol, offspring.Position);
+                    DecreaseHealth(GameConstants.Reproduction.ReproductionHealthCost);
+                }
             }
 
             // Skip special action for Antelopes since they don't have any
@@ -114,7 +125,7 @@ namespace Savanna.GameEngine.Models
         /// <summary>
         /// Template method for special action implementation
         /// </summary>
-        protected abstract void PerformSpecialAction(GameField field);
+        protected abstract void PerformSpecialAction(IGameField field);
 
         // Health management methods delegated to HealthManager
         public void DecreaseHealth(double amount) => _healthManager.DecreaseHealth(amount);
@@ -122,25 +133,7 @@ namespace Savanna.GameEngine.Models
         public void Die() => _healthManager.Die();
 
         // Reproduction methods delegated to ReproductionManager
-        public void UpdateReproductionStatus(GameField field) => _reproductionManager.UpdateReproductionStatus(field);
+        public void UpdateReproductionStatus(IGameField field) => _reproductionManager.UpdateReproductionStatus(field);
         public abstract IGameEntity Reproduce(Position position);
-    }
-
-    /// <summary>
-    /// Immutable record representing a position on the field.
-    /// Uses record for built-in value equality and immutability.
-    /// </summary>
-    public record Position(int X, int Y)
-    {
-        /// <summary>
-        /// Calculates Euclidean distance between two positions.
-        /// Used for determining distances between animals for vision and interaction.
-        /// </summary>
-        public double DistanceTo(Position other)
-        {
-            int dx = X - other.X;
-            int dy = Y - other.Y;
-            return Math.Sqrt(dx * dx + dy * dy);
-        }
     }
 } 
