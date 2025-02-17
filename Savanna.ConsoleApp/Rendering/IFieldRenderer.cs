@@ -1,4 +1,4 @@
-using Savanna.GameEngine.Models;
+using Savanna.Common.Interfaces;
 using System.Collections.Generic;
 
 namespace Savanna.ConsoleApp.Rendering
@@ -12,6 +12,6 @@ namespace Savanna.ConsoleApp.Rendering
         /// <summary>
         /// Creates a visual representation of the field state
         /// </summary>
-        char[,] RenderField(int width, int height, IReadOnlyList<Animal> animals);
+        char[,] RenderField(int width, int height, IReadOnlyList<IGameEntity> animals);
     }
 } 

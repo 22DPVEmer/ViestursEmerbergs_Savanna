@@ -1,5 +1,6 @@
+using System;
 using Savanna.GameEngine.Constants;
-using Savanna.GameEngine.Interfaces;
+using Savanna.Common.Interfaces;
 
 namespace Savanna.GameEngine.Models
 {
