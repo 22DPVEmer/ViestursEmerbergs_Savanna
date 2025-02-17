@@ -1,8 +1,23 @@
 using System.Text.Json.Serialization;
 
-namespace Savanna.Plugins.Tiger.Models
+namespace Savanna.Common.Models
 {
-    public class TigerConfig
+    public class PluginsConfig
+    {
+        [JsonPropertyName("plugins")]
+        public PluginsSection Plugins { get; set; }
+    }
+
+    public class PluginsSection
+    {
+        [JsonPropertyName("tiger")]
+        public TigerPluginConfig Tiger { get; set; }
+
+        [JsonPropertyName("zebra")]
+        public ZebraPluginConfig Zebra { get; set; }
+    }
+
+    public class TigerPluginConfig
     {
         [JsonPropertyName("configuration")]
         public ConfigurationSection Configuration { get; set; }
@@ -15,6 +30,24 @@ namespace Savanna.Plugins.Tiger.Models
 
         [JsonPropertyName("hunting")]
         public HuntingSection Hunting { get; set; }
+
+        [JsonPropertyName("plugin")]
+        public PluginSection Plugin { get; set; }
+    }
+
+    public class ZebraPluginConfig
+    {
+        [JsonPropertyName("configuration")]
+        public ConfigurationSection Configuration { get; set; }
+
+        [JsonPropertyName("movement")]
+        public MovementSection Movement { get; set; }
+
+        [JsonPropertyName("reproduction")]
+        public ReproductionSection Reproduction { get; set; }
+
+        [JsonPropertyName("symbols")]
+        public SymbolsSection Symbols { get; set; }
 
         [JsonPropertyName("plugin")]
         public PluginSection Plugin { get; set; }
@@ -69,6 +102,15 @@ namespace Savanna.Plugins.Tiger.Models
 
         [JsonPropertyName("huntingCost")]
         public double HuntingCost { get; set; }
+    }
+
+    public class SymbolsSection
+    {
+        [JsonPropertyName("lionSymbol")]
+        public string LionSymbol { get; set; }
+
+        [JsonPropertyName("tigerSymbol")]
+        public string TigerSymbol { get; set; }
     }
 
     public class PluginSection

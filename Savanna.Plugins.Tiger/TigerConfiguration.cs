@@ -1,5 +1,5 @@
 using Savanna.Common.Interfaces;
-using Savanna.Plugins.Tiger.Models;
+using Savanna.Common.Models;
 
 namespace Savanna.Plugins.Tiger
 {
@@ -9,9 +9,9 @@ namespace Savanna.Plugins.Tiger
     /// </summary>
     public class TigerConfiguration : IAnimalConfiguration
     {
-        private readonly TigerConfig _config;
+        private readonly TigerPluginConfig _config;
 
-        public TigerConfiguration(TigerConfig config)
+        public TigerConfiguration(TigerPluginConfig config)
         {
             _config = config;
         }

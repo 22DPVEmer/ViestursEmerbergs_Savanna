@@ -1,5 +1,5 @@
 using Savanna.Common.Interfaces;
-using Savanna.Plugins.Zebra.Models;
+using Savanna.Common.Models;
 
 namespace Savanna.Plugins.Zebra
 {
@@ -9,9 +9,9 @@ namespace Savanna.Plugins.Zebra
     /// </summary>
     public class ZebraConfiguration : IAnimalConfiguration
     {
-        private readonly ZebraConfig _config;
+        private readonly ZebraPluginConfig _config;
 
-        public ZebraConfiguration(ZebraConfig config)
+        public ZebraConfiguration(ZebraPluginConfig config)
         {
             _config = config;
         }
@@ -24,13 +24,11 @@ namespace Savanna.Plugins.Zebra
             (_config.Symbols.LionSymbol[0], _config.Symbols.TigerSymbol[0]);
 
         public int GetMovementCost() => _config.Movement.MovementCost;
-
-        public double GetReproductionCost() => _config.Reproduction.ReproductionCost;
+        public int GetMaxMovementAttempts() => _config.Movement.MaxMovementAttempts;
 
         public int GetRequiredConsecutiveRounds() => _config.Reproduction.RequiredConsecutiveRounds;
-
         public double GetMinimumHealthToReproduce() => _config.Reproduction.MinimumHealthToReproduce;
-
         public int GetMatingDistance() => _config.Reproduction.MatingDistance;
+        public double GetReproductionCost() => _config.Reproduction.ReproductionCost;
     }
 } 

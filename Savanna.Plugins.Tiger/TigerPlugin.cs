@@ -1,10 +1,8 @@
 using System;
-using System.IO;
-using System.Text.Json;
 using Savanna.Common.Models;
 using Savanna.Common.Interfaces;
 using Savanna.Common.Constants;
-using Savanna.Plugins.Tiger.Models;
+using Savanna.Common.Configuration;
 
 namespace Savanna.Plugins.Tiger
 {
@@ -15,36 +13,15 @@ namespace Savanna.Plugins.Tiger
     public class TigerPlugin : IAnimalPlugin
     {
         private readonly TigerConfiguration _configuration;
-        private readonly TigerConfig _config;
+        private readonly TigerPluginConfig _config;
 
         public TigerPlugin()
         {
             try
             {
-                // Try the plugin-specific directory first
-                var pluginPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, 
-                    PluginConfigurationMessages.PluginsDirectory, 
-                    PluginNames.Tiger, 
-                    PluginConfigurationMessages.ConfigFileName);
-                
-                // Fallback to the root directory if not found in plugin directory
-                var rootPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, 
-                    PluginConfigurationMessages.ConfigFileName);
-                
-                var configPath = File.Exists(pluginPath) ? pluginPath : rootPath;
-                
-                if (!File.Exists(configPath))
-                {
-                    throw new FileNotFoundException(
-                        string.Format(PluginConfigurationMessages.ConfigFileNotFound, PluginNames.Tiger, pluginPath, rootPath));
-                }
+                _config = PluginConfigurationLoader.GetTigerConfig();
 
-                var jsonString = File.ReadAllText(configPath);
-                _config = JsonSerializer.Deserialize<TigerConfig>(jsonString) 
-                    ?? throw new InvalidOperationException(
-                        string.Format(PluginConfigurationMessages.DeserializationFailed, PluginNames.Tiger));
-
-                // Verify the plugin name in config matches the expected name
+                // Verify the plugin name matches
                 if (_config.Plugin.Name != PluginNames.Tiger)
                 {
                     throw new InvalidOperationException(
