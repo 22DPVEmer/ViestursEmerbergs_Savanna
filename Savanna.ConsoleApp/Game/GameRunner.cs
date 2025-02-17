@@ -71,7 +71,7 @@ namespace Savanna.ConsoleApp.Game
         private bool HandleUserInput()
         {
             var key = Console.ReadKey(true).KeyChar;
-            if (key == 'q' || key == 'Q')
+            if (key == GameConstants.UserInterface.QuitKey || key == GameConstants.UserInterface.QuitKeyLower)
             {
                 return false;
             }

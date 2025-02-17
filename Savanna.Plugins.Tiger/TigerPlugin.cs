@@ -13,10 +13,10 @@ namespace Savanna.Plugins.Tiger
     {
         private readonly TigerConfiguration _configuration = new();
 
-        public string AnimalName => "Tiger";
-        public char Symbol => _configuration.Symbol;
+        public string AnimalName => TigerConstants.Plugin.Name;
+        public char Symbol => TigerConstants.Configuration.Symbol;
         public IAnimalConfiguration Configuration => _configuration;
-        public string Version => "1.0.0";
+        public string Version => TigerConstants.Plugin.Version;
         public bool IsCompatible => true;
 
         public IGameEntity CreateAnimal(Position position)

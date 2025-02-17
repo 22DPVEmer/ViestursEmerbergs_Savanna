@@ -13,10 +13,10 @@ namespace Savanna.Plugins.Zebra
     {
         private readonly ZebraConfiguration _configuration = new();
 
-        public string AnimalName => "Zebra";
-        public char Symbol => _configuration.Symbol;
+        public string AnimalName => ZebraConstants.Plugin.Name;
+        public char Symbol => ZebraConstants.Configuration.Symbol;
         public IAnimalConfiguration Configuration => _configuration;
-        public string Version => "1.0.0";
+        public string Version => ZebraConstants.Plugin.Version;
         public bool IsCompatible => true;
 
         public IGameEntity CreateAnimal(Position position)

@@ -1,4 +1,5 @@
 using Savanna.Common.Interfaces;
+using Savanna.Plugins.Tiger.Constants;
 
 namespace Savanna.Plugins.Tiger
 {
@@ -8,8 +9,8 @@ namespace Savanna.Plugins.Tiger
     /// </summary>
     public class TigerConfiguration : IAnimalConfiguration
     {
-        public int Speed => 2;  // Slower but stronger
-        public int VisionRange => 7;  // Better vision range like a predator
-        public char Symbol => 'T';  // 'T' for Tiger
+        public int Speed => TigerConstants.Configuration.Speed;
+        public int VisionRange => TigerConstants.Configuration.VisionRange;
+        public char Symbol => TigerConstants.Configuration.Symbol;
     }
 }

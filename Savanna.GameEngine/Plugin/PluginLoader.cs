@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Collections.Generic;
 using Savanna.Common.Interfaces;
 using Savanna.Common.Constants;
+using Savanna.GameEngine.Constants;
 
 namespace Savanna.GameEngine.Plugin
 {
@@ -30,7 +31,7 @@ namespace Savanna.GameEngine.Plugin
             Directory.CreateDirectory(_pluginPath);
 
             // Get all DLL files in the plugins directory
-            var pluginFiles = Directory.GetFiles(_pluginPath, "*.dll");
+            var pluginFiles = Directory.GetFiles(_pluginPath, GameConstants.Plugin.DllFilePattern);
             Console.WriteLine(string.Format(PluginConstants.Messages.FoundDllFiles, pluginFiles.Length));
 
             foreach (var file in pluginFiles)

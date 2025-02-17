@@ -32,7 +32,8 @@ namespace Savanna.Plugins.Zebra
 
             // Look for predators and try to escape if they're nearby
             var nearestPredator = field.GetEntitiesInRange(Position, VisionRange)
-                .Where(e => (e.Symbol == 'L' || e.Symbol == 'T') && e.IsAlive)
+                .Where(e => (e.Symbol == ZebraConstants.Symbols.LionSymbol || 
+                           e.Symbol == ZebraConstants.Symbols.TigerSymbol) && e.IsAlive)
                 .OrderBy(e => e.Position.DistanceTo(Position))
                 .FirstOrDefault();
 

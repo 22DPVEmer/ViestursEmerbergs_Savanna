@@ -29,7 +29,7 @@ namespace Savanna.ConsoleApp
         public Program()
         {
             // Set up plugins directory
-            var pluginsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "plugins");
+            var pluginsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, GameConstants.Plugin.DirectoryName);
             try
             {
                 Directory.CreateDirectory(pluginsPath);

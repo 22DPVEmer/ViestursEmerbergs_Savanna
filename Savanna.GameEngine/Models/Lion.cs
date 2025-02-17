@@ -16,8 +16,7 @@ namespace Savanna.GameEngine.Models
         // Shared Random instance to prevent same-tick values
         private static readonly Random Random = new Random();
         
-        private const double CLOSE_DISTANCE = 1.5;
-
+        
         /// <summary>
         /// Creates a new Lion at the specified position with given configuration.
         /// </summary>
@@ -78,7 +77,7 @@ namespace Savanna.GameEngine.Models
                 Position = CalculateChasePosition(field, prey);
                 
                 // Try to catch prey before applying movement cost
-                if (prey.Position.DistanceTo(Position) <= CLOSE_DISTANCE)
+                if (prey.Position.DistanceTo(Position) <= GameConstants.Animal.Lion.CloseDistance)
                 {
                     CatchPrey(prey);
                 }
@@ -133,7 +132,7 @@ namespace Savanna.GameEngine.Models
         /// </summary>
         private Position CalculateChasePosition(IGameField field, IGameEntity prey)
         {
-            if (prey.Position.DistanceTo(Position) <= CLOSE_DISTANCE)
+            if (prey.Position.DistanceTo(Position) <= GameConstants.Animal.Lion.CloseDistance)
             {
                 return prey.Position;
             }

@@ -1,5 +1,6 @@
 using Savanna.Common.Models;
 using Savanna.Common.Interfaces;
+using Savanna.Common.Constants;
 using System;
 
 namespace Savanna.Plugins.Base
@@ -10,7 +11,7 @@ namespace Savanna.Plugins.Base
     public abstract class AnimalBase : IGameEntity, IMovable, IActionable, IHealthManageable, IReproducible
     {
         private readonly IAnimalConfiguration _configuration;
-        private double _health = 100;
+        private double _health = AnimalBaseConstants.InitialHealth;
         private IReproducible _reproductionManager;
 
         protected AnimalBase(Position position, IAnimalConfiguration configuration, IReproducible reproductionManager)
@@ -39,7 +40,7 @@ namespace Savanna.Plugins.Base
         {
             if (!IsAlive) return;
             var oldHealth = _health;
-            _health = Math.Max(0, _health - amount);
+            _health = Math.Max(AnimalBaseConstants.MinHealth, _health - amount);
             OnHealthChanged(oldHealth, _health);
         }
 
@@ -47,13 +48,13 @@ namespace Savanna.Plugins.Base
         {
             if (!IsAlive) return;
             var oldHealth = _health;
-            _health = Math.Min(100, _health + amount);
+            _health = Math.Min(AnimalBaseConstants.MaxHealth, _health + amount);
             OnHealthChanged(oldHealth, _health);
         }
 
         public virtual void Die()
         {
-            _health = 0;
+            _health = AnimalBaseConstants.MinHealth;
             OnDeath();
         }
 
@@ -72,7 +73,7 @@ namespace Savanna.Plugins.Base
             {
                 var offspring = Reproduce(Position);
                 field.AddAnimal(offspring.Symbol, offspring.Position);
-                DecreaseHealth(20); // Default reproduction cost
+                DecreaseHealth(AnimalBaseConstants.ReproductionHealthCost);
             }
         }
 

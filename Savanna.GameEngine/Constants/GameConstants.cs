@@ -74,6 +74,7 @@ namespace Savanna.GameEngine.Constants
                 public const int Speed = 1;
                 public const int VisionRange = 5;
                 public const double CatchDistance = 1.0;
+                public const double CloseDistance = 1.5;
             }
         }
 
@@ -83,6 +84,10 @@ namespace Savanna.GameEngine.Constants
             public const string AddAntelopeInstruction = "Press 'A' to add Antelope";
             public const string AddLionInstruction = "Press 'L' to add Lion";
             public const string QuitInstruction = "Press 'Q' to quit";
+
+            // Key constants
+            public const char QuitKey = 'Q';
+            public const char QuitKeyLower = 'q';
         }
 
         /// <summary>
@@ -106,6 +111,12 @@ namespace Savanna.GameEngine.Constants
             public const string AntelopeNoReproduceBeyondDistance = "Antelope{0} should not reproduce beyond 2 tiles distance";
             public const string AntelopeInsufficientHealth = "Antelope with insufficient health should not reproduce";
             public const string ConsecutiveRoundsReset = "Consecutive rounds should reset when animals separate";
+        }
+
+        public static class Plugin
+        {
+            public const string DirectoryName = "plugins";
+            public const string DllFilePattern = "*.dll";
         }
     }
 } 

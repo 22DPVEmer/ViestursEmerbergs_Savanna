@@ -14,7 +14,6 @@ namespace Savanna.Plugins.Tiger
     public class Tiger : AnimalBase
     {
         private static readonly Random Random = new();
-        private const double CLOSE_DISTANCE = 1.5;
         
         public Tiger(Position position, IAnimalConfiguration configuration) 
             : base(position, configuration, new TigerReproductionManager(position, configuration, null))
@@ -30,12 +29,11 @@ namespace Savanna.Plugins.Tiger
         /// </summary>
         private IGameEntity? FindNearestPrey(IGameField field)
         {
-            const char LION_SYMBOL = 'L';  // Lions are too dangerous to attack
-
             return field.GetEntitiesInRange(Position, VisionRange)
                 .Where(entity =>
-                    entity.Symbol != LION_SYMBOL &&  // Don't attack lions
-                    (entity.Symbol == 'Z' || entity.Symbol == 'A') &&  // Attack Zebras or Antelopes
+                    entity.Symbol != TigerConstants.Symbols.LionSymbol &&  // Don't attack lions
+                    (entity.Symbol == TigerConstants.Symbols.ZebraSymbol || 
+                     entity.Symbol == TigerConstants.Symbols.AntelopeSymbol) &&  // Attack Zebras or Antelopes
                     entity.IsAlive)                     // Only target living entities
                 .OrderBy(entity => entity.Position.DistanceTo(Position))
                 .FirstOrDefault();
@@ -60,7 +58,7 @@ namespace Savanna.Plugins.Tiger
                 Position = CalculateChasePosition(field, prey);
                 
                 // Try to catch prey before applying movement cost
-                if (prey.Position.DistanceTo(Position) <= CLOSE_DISTANCE)
+                if (prey.Position.DistanceTo(Position) <= TigerConstants.Action.CatchDistance)
                 {
                     CatchPrey(prey);
                 }
@@ -75,7 +73,7 @@ namespace Savanna.Plugins.Tiger
 
         private Position CalculateChasePosition(IGameField field, IGameEntity prey)
         {
-            if (prey.Position.DistanceTo(Position) <= CLOSE_DISTANCE)
+            if (prey.Position.DistanceTo(Position) <= TigerConstants.Action.CatchDistance)
             {
                 return prey.Position;
             }
