@@ -1,7 +1,6 @@
 using Savanna.Common.Models;
 using Savanna.Common.Interfaces;
 using Savanna.Plugins.Base;
-using Savanna.Plugins.Zebra.Constants;
 using System;
 using System.Linq;
 
@@ -14,10 +13,12 @@ namespace Savanna.Plugins.Zebra
     public class Zebra : AnimalBase
     {
         private static readonly Random Random = new();
+        private readonly ZebraConfiguration _configuration;
 
         public Zebra(Position position, IAnimalConfiguration configuration) 
             : base(position, configuration, new ZebraReproductionManager(position, configuration, null))
         {
+            _configuration = (ZebraConfiguration)configuration;
             ((ZebraReproductionManager)ReproductionManager).UpdateHealthManager(this);
         }
 
@@ -32,8 +33,8 @@ namespace Savanna.Plugins.Zebra
 
             // Look for predators and try to escape if they're nearby
             var nearestPredator = field.GetEntitiesInRange(Position, VisionRange)
-                .Where(e => (e.Symbol == ZebraConstants.Symbols.LionSymbol || 
-                           e.Symbol == ZebraConstants.Symbols.TigerSymbol) && e.IsAlive)
+                .Where(e => (e.Symbol == _configuration.GetPredatorSymbols().lionSymbol || 
+                           e.Symbol == _configuration.GetPredatorSymbols().tigerSymbol) && e.IsAlive)
                 .OrderBy(e => e.Position.DistanceTo(Position))
                 .FirstOrDefault();
 
@@ -41,7 +42,7 @@ namespace Savanna.Plugins.Zebra
                 ? CalculateEscapePosition(field, nearestPredator)
                 : CalculateRandomPosition(field);
 
-            DecreaseHealth(ZebraConstants.Movement.MovementCost);
+            DecreaseHealth(_configuration.GetMovementCost());
         }
 
         private Position CalculateEscapePosition(IGameField field, IGameEntity predator)
@@ -78,7 +79,7 @@ namespace Savanna.Plugins.Zebra
             {
                 var offspring = Reproduce(Position);
                 field.AddAnimal(offspring.Symbol, offspring.Position);
-                DecreaseHealth(ZebraConstants.Reproduction.ReproductionCost);
+                DecreaseHealth(_configuration.GetReproductionCost());
             }
         }
 

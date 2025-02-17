@@ -1,0 +1,27 @@
+{
+  "configuration": {
+    "symbol": "T",
+    "speed": 2,
+    "visionRange": 4
+  },
+  "movement": {
+    "movementCost": 2,
+    "maxMovementAttempts": 8
+  },
+  "reproduction": {
+    "requiredConsecutiveRounds": 4,
+    "minimumHealthToReproduce": 15.0,
+    "matingDistance": 2,
+    "reproductionCost": 8.0
+  },
+  "hunting": {
+    "preySymbols": ["Z", "A"],
+    "huntingRange": 3,
+    "huntingDamage": 25.0,
+    "huntingCost": 3.0
+  },
+  "plugin": {
+    "name": "Tiger",
+    "version": "1.0.0"
+  }
+} 

@@ -1,7 +1,6 @@
 using Savanna.Common.Models;
 using Savanna.Common.Interfaces;
 using Savanna.Plugins.Base;
-using Savanna.Plugins.Tiger.Constants;
 using System;
 using System.Linq;
 
@@ -14,10 +13,12 @@ namespace Savanna.Plugins.Tiger
     public class Tiger : AnimalBase
     {
         private static readonly Random Random = new();
+        private readonly TigerConfiguration _configuration;
         
         public Tiger(Position position, IAnimalConfiguration configuration) 
             : base(position, configuration, new TigerReproductionManager(position, configuration, null))
         {
+            _configuration = (TigerConfiguration)configuration;
             ((TigerReproductionManager)ReproductionManager).UpdateHealthManager(this);
         }
 
@@ -29,12 +30,11 @@ namespace Savanna.Plugins.Tiger
         /// </summary>
         private IGameEntity? FindNearestPrey(IGameField field)
         {
+            var preySymbols = _configuration.GetPreySymbols();
             return field.GetEntitiesInRange(Position, VisionRange)
                 .Where(entity =>
-                    entity.Symbol != TigerConstants.Symbols.LionSymbol &&  // Don't attack lions
-                    (entity.Symbol == TigerConstants.Symbols.ZebraSymbol || 
-                     entity.Symbol == TigerConstants.Symbols.AntelopeSymbol) &&  // Attack Zebras or Antelopes
-                    entity.IsAlive)                     // Only target living entities
+                    preySymbols.Contains(entity.Symbol) && // Only attack configured prey
+                    entity.IsAlive)                        // Only target living entities
                 .OrderBy(entity => entity.Position.DistanceTo(Position))
                 .FirstOrDefault();
         }
@@ -58,7 +58,7 @@ namespace Savanna.Plugins.Tiger
                 Position = CalculateChasePosition(field, prey);
                 
                 // Try to catch prey before applying movement cost
-                if (prey.Position.DistanceTo(Position) <= TigerConstants.Action.CatchDistance)
+                if (prey.Position.DistanceTo(Position) <= _configuration.GetHuntingRange())
                 {
                     CatchPrey(prey);
                 }
@@ -68,12 +68,12 @@ namespace Savanna.Plugins.Tiger
                 Position = CalculateRandomPosition(field);
             }
 
-            DecreaseHealth(TigerConstants.Movement.MovementCost);
+            DecreaseHealth(_configuration.GetMovementCost());
         }
 
         private Position CalculateChasePosition(IGameField field, IGameEntity prey)
         {
-            if (prey.Position.DistanceTo(Position) <= TigerConstants.Action.CatchDistance)
+            if (prey.Position.DistanceTo(Position) <= _configuration.GetHuntingRange())
             {
                 return prey.Position;
             }
@@ -101,7 +101,7 @@ namespace Savanna.Plugins.Tiger
             if (prey is IHealthManageable healthManageable && healthManageable.IsAlive)
             {
                 healthManageable.Die();
-                IncreaseHealth(TigerConstants.Action.PreyHealthValue);
+                IncreaseHealth(_configuration.GetHuntingDamage());
             }
         }
 
@@ -115,7 +115,7 @@ namespace Savanna.Plugins.Tiger
             {
                 var offspring = Reproduce(Position);
                 field.AddAnimal(offspring.Symbol, offspring.Position);
-                DecreaseHealth(TigerConstants.Reproduction.ReproductionCost);
+                DecreaseHealth(_configuration.GetReproductionCost());
             }
         }
 

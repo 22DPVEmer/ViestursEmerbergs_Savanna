@@ -1,6 +1,5 @@
 using Savanna.Common.Models;
 using Savanna.Common.Interfaces;
-using Savanna.Plugins.Tiger.Constants;
 using System;
 using System.Linq;
 
@@ -13,19 +12,19 @@ namespace Savanna.Plugins.Tiger
     internal class TigerReproductionManager : IReproducible
     {
         private readonly Position _parentPosition;
-        private readonly IAnimalConfiguration _configuration;
+        private readonly TigerConfiguration _configuration;
         private IHealthManageable? _healthManager;
         private int _consecutiveRoundsNearMate;
 
         public int ConsecutiveRoundsNearMate => _consecutiveRoundsNearMate;
         public bool CanReproduce => 
-            _consecutiveRoundsNearMate >= TigerConstants.Reproduction.RequiredConsecutiveRounds &&
-            _healthManager?.Health >= TigerConstants.Reproduction.MinimumHealthToReproduce;
+            _consecutiveRoundsNearMate >= _configuration.GetRequiredConsecutiveRounds() &&
+            _healthManager?.Health >= _configuration.GetMinimumHealthToReproduce();
 
         public TigerReproductionManager(Position position, IAnimalConfiguration configuration, IHealthManageable healthManager)
         {
             _parentPosition = position;
-            _configuration = configuration;
+            _configuration = (TigerConfiguration)configuration;
             _healthManager = healthManager;
             _consecutiveRoundsNearMate = 0;
         }
@@ -37,13 +36,13 @@ namespace Savanna.Plugins.Tiger
 
         public void UpdateReproductionStatus(IGameField field)
         {
-            if (!_healthManager.IsAlive || _healthManager.Health < TigerConstants.Reproduction.MinimumHealthToReproduce)
+            if (!_healthManager!.IsAlive || _healthManager.Health < _configuration.GetMinimumHealthToReproduce())
             {
                 _consecutiveRoundsNearMate = 0;
                 return;
             }
 
-            bool isNearMate = field.GetEntitiesInRange(_parentPosition, TigerConstants.Reproduction.MatingDistance)
+            bool isNearMate = field.GetEntitiesInRange(_parentPosition, _configuration.GetMatingDistance())
                 .Where(z => z.Symbol == _configuration.Symbol && z.IsAlive)
                 .Any();
 
@@ -64,8 +63,7 @@ namespace Savanna.Plugins.Tiger
                 position.Y + Random.Shared.Next(-1, 2)
             );
             
-            var configuration = new TigerConfiguration();
-            return new Tiger(newPosition, configuration);
+            return new Tiger(newPosition, _configuration);
         }
     }
 }
