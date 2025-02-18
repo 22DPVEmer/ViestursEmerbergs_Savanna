@@ -1,0 +1,52 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Welcome to Savanna";
+}
+
+<div class="container">
+    <div class="text-center">
+        <h1 class="display-4 mb-4">Welcome to Savanna Game</h1>
+        
+        @if (User.Identity?.IsAuthenticated == true)
+        {
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <p class="lead mb-4">Welcome back! Head to your dashboard to continue your adventure.</p>
+                    <a class="btn btn-primary btn-lg" asp-page="/Dashboard">Go to Dashboard</a>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <p class="lead mb-4">
+                        Experience the thrill of managing your own savanna ecosystem! Create and manage your virtual savanna,
+                        watch animals interact, and make strategic decisions to maintain the balance of nature.
+                    </p>
+                    
+                    <div class="d-grid gap-3 col-md-6 mx-auto">
+                        <a class="btn btn-primary btn-lg" asp-area="Identity" asp-page="/Account/Register">Register Now</a>
+                        <a class="btn btn-outline-primary btn-lg" asp-area="Identity" asp-page="/Account/Login">Login</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-5">
+                <div class="col-md-4">
+                    <h3>Manage Your Savanna</h3>
+                    <p>Create and customize your own virtual savanna ecosystem with various animals and environments.</p>
+                </div>
+                <div class="col-md-4">
+                    <h3>Track Progress</h3>
+                    <p>Monitor your ecosystem's health, track animal populations, and view detailed statistics.</p>
+                </div>
+                <div class="col-md-4">
+                    <h3>Save & Resume</h3>
+                    <p>Save your progress at any time and continue your savanna management journey later.</p>
+                </div>
+            </div>
+        }
+    </div>
+</div>
