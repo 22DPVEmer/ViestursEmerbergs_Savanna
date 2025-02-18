@@ -10,18 +10,11 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 
-builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options => {
-        options.SignIn.RequireConfirmedAccount = false;
-        options.SignIn.RequireConfirmedEmail = false;
-        options.Password.RequireDigit = true;
-        options.Password.RequireLowercase = true;
-        options.Password.RequireUppercase = true;
-        options.Password.RequireNonAlphanumeric = true;
-        options.Password.RequiredLength = 8;
-    })
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
-    .AddDefaultTokenProviders()
-    .AddDefaultUI();
+    .AddDefaultTokenProviders();
+
+builder.Services.Configure<IdentityOptions>(builder.Configuration.GetSection("Identity"));
 
 builder.Services.AddRazorPages();
 
