@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using Savanna.Infrastructure.Data;
 using Savanna.Infrastructure.Models;
+using Savanna.Infrastructure.Constants;
 using System.Linq;
 
 namespace Savanna.Web.Pages
@@ -60,12 +61,12 @@ namespace Savanna.Web.Pages
 
         public static int GetLionCount(this GameSave gameSave)
         {
-            return gameSave.GameState?.Animals.Count(a => a.AnimalType == "Lion") ?? 0;
+            return gameSave.GameState?.Animals.Count(a => a.AnimalType == AnimalTypes.Lion) ?? 0;
         }
 
         public static int GetAntelopeCount(this GameSave gameSave)
         {
-            return gameSave.GameState?.Animals.Count(a => a.AnimalType == "Antelope") ?? 0;
+            return gameSave.GameState?.Animals.Count(a => a.AnimalType == AnimalTypes.Antelope) ?? 0;
         }
     }
 } 
