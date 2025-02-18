@@ -3,8 +3,7 @@
 *.user
 *.userosscache
 *.sln.docstates
-*.vsidx
-*.wsuo
+*.userprefs
 
 # Build results
 [Dd]ebug/
@@ -22,10 +21,18 @@ bld/
 [Ll]og/
 [Ll]ogs/
 
-# Visual Studio cache/options directory
+# Visual Studio 2015/2017/2019/2022 cache/options directory
 .vs/
-# Uncomment if you have tasks that create the project's static files in wwwroot
-#wwwroot/
+
+# MSTest test Results
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+
+# Entity Framework Core
+**/Migrations/
+*.db
+*.db-shm
+*.db-wal
 
 # .NET Core
 project.lock.json
@@ -54,6 +61,7 @@ artifacts/
 *.tmp_proj
 *_wpftmp.csproj
 *.log
+*.tlog
 *.vspscc
 *.vssscc
 .builds
@@ -61,14 +69,74 @@ artifacts/
 *.svclog
 *.scc
 
-# Visual Studio cache files
-# files ending in .cache can be ignored
-*.[Cc]ache
-# but keep track of directories ending in .cache
-!?*.[Cc]ache/
+# Visual Studio profiler
+*.psess
+*.vsp
+*.vspx
+*.sap
 
-# Others
-*.dll
-AssemblyInfo.cs
-*.AssemblyInfo.cs
-*.AssemblyAttributes.cs 
+# ReSharper
+_ReSharper*/
+*.[Rr]e[Ss]harper
+*.DotSettings.user
+
+# Visual Studio code coverage results
+*.coverage
+*.coveragexml
+
+# NuGet Packages
+*.nupkg
+*.snupkg
+# The packages folder can be ignored because of Package Restore
+**/[Pp]ackages/*
+# except build/, which is used as an MSBuild target.
+!**/[Pp]ackages/build/
+
+# Local History for Visual Studio Code
+.history/
+
+# Windows image file caches
+Thumbs.db
+ehthumbs.db
+
+# Folder config file
+Desktop.ini
+
+# Recycle Bin used on file shares
+$RECYCLE.BIN/
+
+# VS Code directories
+.vscode/
+
+# Windows Installer files
+*.cab
+*.msi
+*.msm
+*.msp
+
+# JetBrains Rider
+.idea/
+*.sln.iml
+
+# User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# SQLite database files
+*.db
+*.db-shm
+*.db-wal
+
+# Local development settings
+appsettings.Development.json
+appsettings.Local.json
+
+# Temporary files
+*.swp
+*.*~
+project.lock.json
+.DS_Store
+*.pyc 

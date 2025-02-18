@@ -1,0 +1,54 @@
+@page
+@model Savanna.Web.Pages.DashboardModel
+@{
+    ViewData["Title"] = "Savanna Game Dashboard";
+}
+
+<div class="container">
+    <h1 class="display-4 mb-4">Welcome to Savanna Game, @User.Identity?.Name!</h1>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Your Saved Games</h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.SavedGames?.Any() == true)
+                    {
+                        <div class="list-group">
+                            @foreach (var game in Model.SavedGames)
+                            {
+                                <a href="#" class="list-group-item list-group-item-action">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">@game.Name</h6>
+                                        <small>@game.SaveDate.ToString("g")</small>
+                                    </div>
+                                </a>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted">No saved games found.</p>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-3">
+                        <a href="#" class="btn btn-primary">Start New Game</a>
+                        <a href="#" class="btn btn-outline-primary">View Game History</a>
+                        <a href="#" class="btn btn-outline-primary">View Achievements</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> 

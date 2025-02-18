@@ -15,7 +15,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Savanna.Plugins", "Savanna.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Savanna.Plugins.Zebra", "Savanna.Plugins.Zebra\Savanna.Plugins.Zebra.csproj", "{B7F91D2E-5A3F-4E8A-B73D-9C4C6D4E48A2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Savanna.Plugins.Tiger", "Savanna.Plugins.Tiger\Savanna.Plugins.Tiger.csproj", "{AA63DE46-A0F5-4105-92CD-153E4F4D0578}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Savanna.Plugins.Tiger", "Savanna.Plugins.Tiger\Savanna.Plugins.Tiger.csproj", "{AA63DE46-A0F5-4105-92CD-153E4F4D0578}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Savanna.Web", "Savanna.Web\Savanna.Web.csproj", "{3CFF64C9-6FEC-4EFC-A56B-DF8BFD83CCCA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Savanna.Infrastructure", "Savanna.Infrastructure\Savanna.Infrastructure.csproj", "{7440E072-1EDD-48CE-8455-4AAE9721C916}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -51,6 +55,14 @@ Global
 		{AA63DE46-A0F5-4105-92CD-153E4F4D0578}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AA63DE46-A0F5-4105-92CD-153E4F4D0578}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AA63DE46-A0F5-4105-92CD-153E4F4D0578}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3CFF64C9-6FEC-4EFC-A56B-DF8BFD83CCCA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3CFF64C9-6FEC-4EFC-A56B-DF8BFD83CCCA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3CFF64C9-6FEC-4EFC-A56B-DF8BFD83CCCA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3CFF64C9-6FEC-4EFC-A56B-DF8BFD83CCCA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7440E072-1EDD-48CE-8455-4AAE9721C916}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7440E072-1EDD-48CE-8455-4AAE9721C916}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7440E072-1EDD-48CE-8455-4AAE9721C916}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7440E072-1EDD-48CE-8455-4AAE9721C916}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
