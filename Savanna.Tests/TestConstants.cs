@@ -24,5 +24,11 @@ namespace Savanna.Tests
             public const string AnimalsNearShouldReproduce = "Animals should reproduce after being near each other for required rounds (current behavior)";
             public const string UnknownAnimalType = "Unknown animal type: {0}";
         }
+
+        public static class AnimalSymbols
+        {
+            public const char Lion = 'L';
+            public const char Antelope = 'A';
+        }
     }
 } 

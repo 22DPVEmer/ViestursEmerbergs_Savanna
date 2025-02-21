@@ -8,7 +8,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Savanna.Common\Savanna.Common.csproj" />
     <ProjectReference Include="..\Savanna.GameEngine\Savanna.GameEngine.csproj" />
   </ItemGroup>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="if not exist &quot;$(TargetDir)plugins&quot; mkdir &quot;$(TargetDir)plugins&quot;" />
+  </Target>
 
 </Project> 

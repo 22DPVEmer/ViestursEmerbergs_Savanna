@@ -14,7 +14,10 @@
     <ProjectReference Include="..\Savanna.Plugins\Savanna.Plugins.csproj" />
   </ItemGroup>
 
-  <!-- Remove post-build event for tests -->
-  <!-- We'll add it back when running the actual application -->
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="xcopy /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)Savanna.ConsoleApp\bin\$(Configuration)\$(TargetFramework)\plugins\&quot;" />
+    <Exec Command="xcopy /Y &quot;$(SolutionDir)Savanna.Common\bin\$(Configuration)\$(TargetFramework)\Savanna.Common.dll&quot; &quot;$(SolutionDir)Savanna.ConsoleApp\bin\$(Configuration)\$(TargetFramework)\plugins\&quot;" />
+    <Exec Command="xcopy /Y &quot;$(SolutionDir)Savanna.Plugins\bin\$(Configuration)\$(TargetFramework)\Savanna.Plugins.dll&quot; &quot;$(SolutionDir)Savanna.ConsoleApp\bin\$(Configuration)\$(TargetFramework)\plugins\&quot;" />
+  </Target>
 
 </Project>

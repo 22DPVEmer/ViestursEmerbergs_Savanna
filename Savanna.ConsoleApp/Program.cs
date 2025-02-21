@@ -10,6 +10,7 @@ using Savanna.ConsoleApp.Rendering;
 using Savanna.ConsoleApp.Game;
 using Savanna.Common.Models;
 using Savanna.Common.Constants;
+using Savanna.Common.Configuration;
 
 namespace Savanna.ConsoleApp
 {
@@ -39,6 +40,9 @@ namespace Savanna.ConsoleApp
             {
                 Console.WriteLine(string.Format(PluginConstants.Messages.PluginDirectoryError, ex.Message));
             }
+
+            // Initialize plugin configuration before creating factory
+            PluginConfigurationLoader.Initialize();
 
             // Initialize game components
             _animalFactory = new AnimalFactory(pluginsPath);
