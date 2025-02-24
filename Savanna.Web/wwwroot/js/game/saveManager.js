@@ -2,40 +2,31 @@
 class SaveManager {
     async loadSavedGames() {
         try {
-            console.log('Loading saved games...');
             const response = await fetch('/api/games/saved');
-            console.log('Response status:', response.status);
             
             if (!response.ok) {
                 if (response.status === 401) {
-                    console.log('Not authenticated, skipping saves display');
                     return; // Not logged in, just don't show saves
                 }
-                throw new Error('Failed to load saved games');
+                throw new Error(GameConstants.Messages.FailedToLoadSaves);
             }
             
             const savedGames = await response.json();
-            console.log('Loaded saved games:', savedGames);
-            
             const container = document.getElementById('savedGames');
-            if (!container) {
-                console.error('Saved games container not found');
-                return;
-            }
+            if (!container) return;
             
             container.innerHTML = ''; // Clear existing games
             
             if (savedGames.length === 0) {
                 container.innerHTML = `
                     <div class="list-group-item text-center text-muted">
-                        No saved games found
+                        ${GameConstants.Messages.NoSavedGames}
                     </div>
                 `;
                 return;
             }
             
             savedGames.forEach(game => {
-                console.log('Processing game:', game);
                 const lionCount = game.animalCounts.lion || 0;
                 const antelopeCount = game.animalCounts.antelope || 0;
                 
@@ -65,15 +56,12 @@ class SaveManager {
                 container.appendChild(gameItem);
             });
         } catch (error) {
-            console.error('Error loading saved games:', error);
-            uiManager.showErrorMessage('Failed to load saved games: ' + error.message);
+            uiManager.showErrorMessage(error.message);
         }
     }
 
     async loadGame(saveId, savedIteration) {
         try {
-            console.log('Loading game:', saveId, 'with iteration:', savedIteration);
-            
             // First, quit any existing game
             if (gameState.gameActive) {
                 await gameControls.quitGame();
@@ -85,52 +73,26 @@ class SaveManager {
             
             if (!response.ok) {
                 const data = await response.json();
-                throw new Error(data.message || 'Failed to load game');
+                throw new Error(data.message || GameConstants.Messages.FailedToLoadGame);
             }
             
-            // Wait for game to initialize with retries
-            let retries = 5;
-            let stateData = null;
-            let lastError = null;
-            
-            while (retries > 0 && !stateData) {
-                try {
-                    await new Promise(resolve => setTimeout(resolve, 1000));
-                    console.log(`Verifying loaded game state (${retries} attempts left)...`);
-                    
-                    const stateResponse = await fetch('/api/games/state');
-                    console.log('State response:', stateResponse.status);
-                    
-                    if (stateResponse.ok) {
-                        stateData = await stateResponse.json();
-                        if (stateData) {
-                            console.log('Loaded game state verified:', stateData);
-                            break;
-                        }
-                    } else {
-                        lastError = `State verification failed with status ${stateResponse.status}`;
-                    }
-                    
-                    retries--;
-                } catch (error) {
-                    console.warn('State verification attempt failed:', error);
-                    lastError = error.message;
-                    retries--;
-                }
+            const stateResponse = await fetch('/api/games/state');
+            if (!stateResponse.ok) {
+                throw new Error(GameConstants.Messages.FailedToLoadGame);
             }
-            
+
+            const stateData = await stateResponse.json();
             if (!stateData) {
-                throw new Error(lastError || 'Could not verify loaded game state');
+                throw new Error(GameConstants.Messages.FailedToLoadGame);
             }
 
             gameState.gameActive = true;
             uiManager.enableGameControls();
             gameState.startGameStatePolling();
             uiManager.updateUI(stateData);
-            uiManager.showSuccessMessage('Game loaded successfully');
+            uiManager.showSuccessMessage(GameConstants.Messages.GameLoaded);
         } catch (error) {
-            console.error('Error loading game:', error);
-            uiManager.showErrorMessage('Failed to load game: ' + error.message);
+            uiManager.showErrorMessage(error.message);
             gameState.resetGameState();
         }
     }
@@ -140,23 +102,19 @@ class SaveManager {
             const response = await fetch('/api/games/save', { method: 'POST' });
             if (!response.ok) {
                 const data = await response.json();
-                throw new Error(data.message || 'Failed to save game');
+                throw new Error(data.message || GameConstants.Messages.FailedToSaveGame);
             }
-            
-            const data = await response.json();
-            console.log('Save response:', data);
             
             gameState.hasUnsavedChanges = false;
             await this.loadSavedGames(); // Refresh the saves list
-            uiManager.showSuccessMessage('Game saved successfully');
+            uiManager.showSuccessMessage(GameConstants.Messages.GameSaved);
         } catch (error) {
-            console.error('Error saving game:', error);
-            uiManager.showErrorMessage('Failed to save game: ' + error.message);
+            uiManager.showErrorMessage(error.message);
         }
     }
 
     async deleteSave(saveId) {
-        if (!confirm('Are you sure you want to delete this saved game?')) {
+        if (!confirm(GameConstants.Confirmations.DeleteSave)) {
             return;
         }
         
@@ -167,14 +125,13 @@ class SaveManager {
             
             if (!response.ok) {
                 const data = await response.json();
-                throw new Error(data.message || 'Failed to delete save');
+                throw new Error(data.message || GameConstants.Messages.FailedToDeleteSave);
             }
             
             await this.loadSavedGames(); // Refresh the list
-            uiManager.showSuccessMessage('Game save deleted successfully');
+            uiManager.showSuccessMessage(GameConstants.Messages.SaveDeleted);
         } catch (error) {
-            console.error('Error deleting save:', error);
-            uiManager.showErrorMessage('Failed to delete save: ' + error.message);
+            uiManager.showErrorMessage(error.message);
         }
     }
 }

@@ -2,13 +2,11 @@
 class AnimalManager {
     async addAnimal(type, isInitialAnimal = false) {
         if (!gameState.gameActive) {
-            console.error('Cannot add animal - game is not active');
-            uiManager.showErrorMessage('Cannot add animals - game is not active');
+            uiManager.showErrorMessage(GameConstants.Messages.NoActiveGame);
             return;
         }
 
         try {
-            console.log(`Adding animal of type: ${type}`);
             const response = await fetch('/api/games/add-animal', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -17,17 +15,14 @@ class AnimalManager {
 
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.message || `Failed to add ${type}`);
+                throw new Error(errorData.message || GameConstants.Messages.FailedToAddAnimal);
             }
             
-            const data = await response.json();
-            console.log('Animal added successfully:', data.message);
             gameState.hasUnsavedChanges = true;
 
             // Only update game state if not adding initial animals
             if (!isInitialAnimal) {
-                console.log('Updating game state...');
-                //await updateGameState();
+                await gameState.updateGameState();
             } else {
                 // For initial animals, just get the current state without updating
                 const stateResponse = await fetch('/api/games/state');
@@ -37,8 +32,7 @@ class AnimalManager {
                 }
             }
         } catch (error) {
-            console.error('Error adding animal:', error);
-            uiManager.showErrorMessage(`Failed to add ${type}: ${error.message}`);
+            uiManager.showErrorMessage(`${GameConstants.Messages.FailedToAddAnimal}: ${error.message}`);
             
             // If we get a "No active game" error, reset the game state
             if (error.message.includes('No active game')) {
@@ -50,7 +44,7 @@ class AnimalManager {
     async initializeAnimalButtons() {
         try {
             const response = await fetch('/api/games/animal-types');
-            if (!response.ok) throw new Error('Failed to get animal types');
+            if (!response.ok) throw new Error(GameConstants.Messages.FailedToInitControls);
             
             const animalTypes = await response.json();
             const buttonContainer = document.getElementById('animalControls');
@@ -66,24 +60,21 @@ class AnimalManager {
                     button.innerHTML = `<i class="bi bi-plus-circle"></i> Add ${type}`;
                     button.addEventListener('click', () => {
                         if (gameState.gameActive) {
-                            this.addAnimal(type).catch(error => {
-                                console.error(`Failed to add ${type}:`, error);
-                            });
+                            this.addAnimal(type);
                         }
                     });
                     buttonContainer.appendChild(button);
                 });
             }
         } catch (error) {
-            console.error('Error initializing animal buttons:', error);
-            uiManager.showErrorMessage('Failed to initialize animal controls. Please refresh the page.');
+            uiManager.showErrorMessage(GameConstants.Messages.FailedToInitControls);
         }
     }
 
     async initializeAnimalStats() {
         try {
             const response = await fetch('/api/games/animal-types');
-            if (!response.ok) throw new Error('Failed to get animal types');
+            if (!response.ok) throw new Error(GameConstants.Messages.FailedToInitControls);
             
             const animalTypes = await response.json();
             const statsContainer = document.getElementById('animalStats');
@@ -102,7 +93,7 @@ class AnimalManager {
                 });
             }
         } catch (error) {
-            console.error('Error initializing animal statistics:', error);
+            uiManager.showErrorMessage(GameConstants.Messages.FailedToInitControls);
         }
     }
 }

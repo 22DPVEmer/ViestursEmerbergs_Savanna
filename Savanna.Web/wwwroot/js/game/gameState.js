@@ -6,7 +6,7 @@ class GameState {
         this.isPaused = false;
         this.displayMode = localStorage.getItem('displayMode') || 'icons';
         this.gameUpdateInterval = null;
-        this.POLL_INTERVAL = 1000;
+        this.POLL_INTERVAL = GameConstants.Intervals.StatePolling;
         this.errorCount = 0;
     }
 
@@ -22,23 +22,22 @@ class GameState {
                     this.stopGameStatePolling();
                     return;
                 }
-                throw new Error('Failed to get game state');
+                throw new Error(GameConstants.Messages.StateUpdateFailed);
             }
 
             const gameState = await response.json();
             uiManager.updateUI(gameState);
             this.errorCount = 0;
         } catch (error) {
-            console.error('Error updating game state:', error);
             this.handleUpdateError();
         }
     }
 
     handleUpdateError() {
         this.errorCount++;
-        if (this.errorCount > 3) {
+        if (this.errorCount > GameConstants.Intervals.MaxErrorRetries) {
             this.stopGameStatePolling();
-            uiManager.showErrorMessage('Lost connection to the game. Please refresh the page.');
+            uiManager.showErrorMessage(GameConstants.Messages.LostConnection);
         }
     }
 
