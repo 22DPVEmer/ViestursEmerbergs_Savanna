@@ -25,6 +25,16 @@ namespace Savanna.Infrastructure.Models
         public int Health { get; set; }
 
         [Required]
-        public bool IsAlive { get; set; }
+        public bool IsAlive { get; set; } // I feel dead
+
+        [Required]
+        public int Age { get; set; } = 0;  // Tracks how many iterations the animal has been alive
+
+        [Required]
+        public int OffspringCount { get; set; } = 0;  // Tracks how many offspring this animal has produced
+
+        [Required]
+        public bool IsSelected { get; set; } = false;  // Tracks if the animal is currently selected in the UI
+
     }
 } 

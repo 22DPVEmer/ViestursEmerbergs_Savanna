@@ -2,124 +2,116 @@
 @using Savanna.Web.Pages
 @model DashboardModel
 @{
-    ViewData["Title"] = "Game Dashboard";
+    ViewData["Title"] = "Savanna Game";
 }
 
-<div class="container py-4">
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card bg-primary text-white">
-                <div class="card-body d-flex justify-content-between align-items-center">
-                    <div>
-                        <h2 class="card-title mb-0">Savanna Game</h2>
-                        <p class="card-text mb-0">Experience the wild!</p>
-                    </div>
-                    <a href="/Game/Play" class="btn btn-light">Start New Game</a>
-                </div>
+<div class="container-fluid py-4">
+    <!-- User Authentication Status -->
+    <div class="mb-4">
+        @if (User.Identity?.IsAuthenticated == true)
+        {
+            <div class="d-flex justify-content-between align-items-center">
+                <span>Welcome, @User.Identity.Name!</span>
+                <form method="post" asp-page="/Account/Logout">
+                    <button type="submit" class="btn btn-outline-secondary btn-sm">Logout</button>
+                </form>
             </div>
-        </div>
+        }
+        else
+        {
+            <a href="/Account/Login" class="btn btn-primary">Login to Save Progress</a>
+        }
     </div>
 
-    <div class="row g-4">
-        <!-- Saved Games Section -->
+    <div class="row">
+        <!-- Game Grid Column -->
         <div class="col-lg-8">
-            <div class="card h-100">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="card-title mb-0">Saved Games</h5>
-                    <div class="btn-group">
-                        <button type="button" class="btn btn-sm btn-outline-primary">List View</button>
-                        <button type="button" class="btn btn-sm btn-outline-primary active">Grid View</button>
+            <!-- Game Header -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2 class="card-title mb-0">Savanna Game</h2>
+                            <p class="card-text mb-0" id="gameStatus">Iteration: <span id="iterationCounter">0</span></p>
+                        </div>
                     </div>
                 </div>
+            </div>
+
+            <!-- Game Controls -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Game Controls</h5>
+                </div>
                 <div class="card-body">
-                    @if (Model.SavedGames?.Any() == true)
-                    {
-                        <div class="row row-cols-1 row-cols-md-2 g-4">
-                            @foreach (var game in Model.SavedGames)
-                            {
-                                <div class="col">
-                                    <div class="card h-100 border-0 shadow-sm">
-                                        <div class="card-body">
-                                            <h6 class="card-title d-flex justify-content-between">
-                                                <span>@game.Name</span>
-                                                <small class="text-muted">Iteration @game.GetCurrentIteration()</small>
-                                            </h6>
-                                            <div class="small mb-3">
-                                                <div class="d-flex justify-content-between">
-                                                    <span>🦁 Lions: @game.GetLionCount()</span>
-                                                    <span>🦌 Antelopes: @game.GetAntelopeCount()</span>
-                                                </div>
-                                            </div>
-                                            <div class="d-flex justify-content-between align-items-center">
-                                                <small class="text-muted">@game.SaveDate.ToString("MMM dd, HH:mm")</small>
-                                                <div class="btn-group">
-                                                    <a href="/Game/Play/@game.Id" class="btn btn-sm btn-primary">Continue</a>
-                                                    <button type="button" class="btn btn-sm btn-outline-danger">Delete</button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            }
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="text-center py-5">
-                            <div class="mb-3">
-                                <i class="bi bi-save2 fs-1 text-muted"></i>
+                    <div class="d-flex flex-column gap-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="btn-group" role="group">
+                                <button id="startGame" class="btn btn-success">
+                                    <i class="bi bi-play-fill"></i> Start Game
+                                </button>
+                                <button id="pauseGame" class="btn btn-warning" disabled>
+                                    <i class="bi bi-pause-fill"></i> Pause Game
+                                </button>
+                                <button id="quitGame" class="btn btn-danger" disabled>
+                                    <i class="bi bi-x-circle"></i> Quit Game
+                                </button>
+                                <button id="saveGame" class="btn btn-primary" disabled>
+                                    <i class="bi bi-save"></i> Save Game
+                                </button>
                             </div>
-                            <h6 class="text-muted">No saved games yet</h6>
-                            <p class="small text-muted mb-3">Start a new game to begin your adventure!</p>
-                            <a href="/Game/Play" class="btn btn-primary">Start New Game</a>
+                            <div class="btn-group" role="group">
+                                <input type="radio" class="btn-check" name="displayMode" id="iconMode" autocomplete="off" checked>
+                                <label class="btn btn-outline-primary" for="iconMode">Icons</label>
+                                <input type="radio" class="btn-check" name="displayMode" id="textMode" autocomplete="off">
+                                <label class="btn btn-outline-primary" for="textMode">Text</label>
+                            </div>
                         </div>
-                    }
+                        <div>
+                            <h6 class="mb-2">Add Animals</h6>
+                            <div id="animalControls" class="d-flex gap-2 flex-wrap">
+                                <!-- Animal buttons will be added here dynamically -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Game Grid -->
+            <div class="card">
+                <div class="card-body p-0">
+                    <div id="gameGrid" class="game-grid position-relative">
+                        <!-- Game grid will be rendered here by JavaScript -->
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Game Settings & Stats -->
+        <!-- Game Info Column -->
         <div class="col-lg-4">
+            <!-- Game Statistics -->
             <div class="card mb-4">
                 <div class="card-header">
-                    <h5 class="card-title mb-0">Game Settings</h5>
+                    <h5 class="card-title mb-0">Game Statistics</h5>
                 </div>
                 <div class="card-body">
-                    <div class="mb-3">
-                        <label class="form-label d-flex justify-content-between">
-                            <span>Display Mode</span>
-                            <span class="badge bg-primary">Current: Icons</span>
-                        </label>
-                        <div class="btn-group w-100">
-                            <button type="button" class="btn btn-outline-primary active">Icons Mode</button>
-                            <button type="button" class="btn btn-outline-primary">Text Mode</button>
-                        </div>
-                    </div>
-                    <div class="form-check form-switch mb-3">
-                        <input class="form-check-input" type="checkbox" id="autosaveEnabled" checked>
-                        <label class="form-check-label" for="autosaveEnabled">Enable Autosave</label>
+                    <div id="animalStats" class="list-group list-group-flush">
+                        <!-- Animal statistics will be added here dynamically -->
                     </div>
                 </div>
             </div>
 
+            <!-- Saved Games -->
             <div class="card">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">Statistics</h5>
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Saved Games</h5>
+                    <button id="refreshSaves" class="btn btn-sm btn-outline-secondary">
+                        <i class="bi bi-arrow-clockwise"></i> Refresh
+                    </button>
                 </div>
-                <div class="card-body">
-                    <div class="list-group list-group-flush">
-                        <div class="list-group-item d-flex justify-content-between align-items-center">
-                            <span>Games Played</span>
-                            <span class="badge bg-primary rounded-pill">@Model.TotalGamesPlayed</span>
-                        </div>
-                        <div class="list-group-item d-flex justify-content-between align-items-center">
-                            <span>Total Animals</span>
-                            <span class="badge bg-primary rounded-pill">@Model.TotalAnimals</span>
-                        </div>
-                        <div class="list-group-item d-flex justify-content-between align-items-center">
-                            <span>Longest Game</span>
-                            <span class="badge bg-primary rounded-pill">@Model.LongestGameIterations iterations</span>
-                        </div>
+                <div class="card-body p-0">
+                    <div id="savedGames" class="list-group list-group-flush">
+                        <!-- Saved games will be loaded here dynamically -->
                     </div>
                 </div>
             </div>
@@ -127,13 +119,123 @@
     </div>
 </div>
 
-@section Scripts {
-    <script>
-        // Warn user when leaving game page without saving
-        window.onbeforeunload = function() {
-            if (document.querySelector('[data-game-active="true"]')) {
-                return "You have an unsaved game. Are you sure you want to leave?";
+@section Styles {
+    <style>
+        .game-grid {
+            aspect-ratio: 1;
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            display: grid;
+            gap: 1px;
+            padding: 1px;
+        }
+
+        .game-cell {
+            background-color: white;
+            border: 1px solid #e9ecef;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .game-cell.lion { color: #dc3545; }
+        .game-cell.antelope { color: #198754; }
+        .game-cell.tiger { color: #fd7e14; }
+        .game-cell.zebra { color: #6c757d; }
+
+        @@media (min-width: 768px) {
+            .game-grid {
+                max-width: 800px;
+                margin: 0 auto;
             }
-        };
+        }
+    </style>
+}
+
+@section Scripts {
+    <script src="~/js/game/uiManager.js"></script>
+    <script src="~/js/game/gameState.js"></script>
+    <script src="~/js/game/gameControls.js"></script>
+    <script src="~/js/game/animalManager.js"></script>
+    <script src="~/js/game/saveManager.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize all game components
+            async function initializeGame() {
+                // Initialize game grid
+                const grid = document.getElementById('gameGrid');
+                if (grid) {
+                    grid.style.gridTemplateColumns = `repeat(20, 1fr)`;
+                    for (let i = 0; i < 400; i++) {
+                        const cell = document.createElement('div');
+                        cell.className = 'game-cell';
+                        cell.dataset.x = i % 20;
+                        cell.dataset.y = Math.floor(i / 20);
+                        grid.appendChild(cell);
+                    }
+                }
+
+                // Initialize display mode
+                const iconModeElement = document.getElementById('iconMode');
+                const textModeElement = document.getElementById('textMode');
+                
+                if (iconModeElement && textModeElement) {
+                    if (gameState.displayMode === 'icons') {
+                        iconModeElement.checked = true;
+                    } else {
+                        textModeElement.checked = true;
+                    }
+
+                    document.querySelectorAll('input[name="displayMode"]').forEach(input => {
+                        input.addEventListener('change', function() {
+                            if (gameState.gameActive) {
+                                input.checked = !input.checked;
+                                return;
+                            }
+                            gameState.displayMode = this.id === 'iconMode' ? 'icons' : 'text';
+                            localStorage.setItem('displayMode', gameState.displayMode);
+                        });
+                    });
+                }
+
+                // Initialize animals
+                await animalManager.initializeAnimalButtons();
+                await animalManager.initializeAnimalStats();
+
+                // Set up event listeners
+                setupEventListeners();
+
+                // Load saved games
+                console.log('Initial load of saved games');
+                await saveManager.loadSavedGames();
+            }
+
+            // Setup event listeners
+            function setupEventListeners() {
+                // Warn about unsaved changes
+                window.onbeforeunload = function(e) {
+                    if (gameState.hasUnsavedChanges) {
+                        e.preventDefault();
+                        return "You have unsaved changes. Are you sure you want to leave?";
+                    }
+                };
+
+                // Game control buttons
+                document.getElementById('startGame')?.addEventListener('click', () => gameControls.startGame());
+                document.getElementById('quitGame')?.addEventListener('click', () => gameControls.quitGame());
+                document.getElementById('saveGame')?.addEventListener('click', () => saveManager.saveGame());
+                document.getElementById('pauseGame')?.addEventListener('click', () => gameControls.togglePause());
+                document.getElementById('refreshSaves')?.addEventListener('click', () => saveManager.loadSavedGames());
+            }
+
+            // Initialize the game
+            initializeGame();
+        });
     </script>
+} 
+} 
+} 
 } 

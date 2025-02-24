@@ -12,7 +12,7 @@ namespace Savanna.Infrastructure
         public ApplicationDbContext CreateDbContext(string[] args)
         {
             IConfigurationRoot configuration = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
+                .SetBasePath(Path.Combine(Directory.GetCurrentDirectory(), "../Savanna.Web"))
                 .AddJsonFile("appsettings.json")
                 .Build();
 

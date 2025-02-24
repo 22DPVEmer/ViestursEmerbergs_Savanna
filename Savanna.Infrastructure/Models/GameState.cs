@@ -5,12 +5,13 @@ namespace Savanna.Infrastructure.Models
 {
     public class GameState
     {
+        [Key]
         public int Id { get; set; }
 
         public int GameSaveId { get; set; }
 
         [ForeignKey("GameSaveId")]
-        public GameSave GameSave { get; set; }
+        public virtual GameSave GameSave { get; set; }
 
         [Required]
         public int BoardWidth { get; set; }
@@ -18,6 +19,9 @@ namespace Savanna.Infrastructure.Models
         [Required]
         public int BoardHeight { get; set; }
 
-        public ICollection<AnimalState> Animals { get; set; } = new List<AnimalState>();
+        [Required]
+        public int CurrentIteration { get; set; } = 0;  // Tracks the current game iteration
+
+        public virtual ICollection<AnimalState> Animals { get; set; } = new List<AnimalState>();
     }
 } 

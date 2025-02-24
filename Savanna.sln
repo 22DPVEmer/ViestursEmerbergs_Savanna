@@ -21,6 +21,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Savanna.Web", "Savanna.Web\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Savanna.Infrastructure", "Savanna.Infrastructure\Savanna.Infrastructure.csproj", "{7440E072-1EDD-48CE-8455-4AAE9721C916}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Savanna.Services", "Savanna.Services\Savanna.Services.csproj", "{AAAEDCEE-7150-42C1-BA44-86FC34D2BCBC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -63,6 +65,10 @@ Global
 		{7440E072-1EDD-48CE-8455-4AAE9721C916}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7440E072-1EDD-48CE-8455-4AAE9721C916}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7440E072-1EDD-48CE-8455-4AAE9721C916}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AAAEDCEE-7150-42C1-BA44-86FC34D2BCBC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AAAEDCEE-7150-42C1-BA44-86FC34D2BCBC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AAAEDCEE-7150-42C1-BA44-86FC34D2BCBC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AAAEDCEE-7150-42C1-BA44-86FC34D2BCBC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -79,5 +79,5 @@ namespace Savanna.GameEngine.Factory
     /// Configuration record for animal properties.
     /// Implements IAnimalConfiguration for use in factory.
     /// </summary>
-    internal record AnimalConfiguration(int Speed, int VisionRange, char Symbol) : IAnimalConfiguration;
+    public record AnimalConfiguration(int Speed, int VisionRange, char Symbol) : IAnimalConfiguration;
 }

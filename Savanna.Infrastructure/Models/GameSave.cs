@@ -19,6 +19,6 @@ namespace Savanna.Infrastructure.Models
         [ForeignKey("UserId")]
         public ApplicationUser User { get; set; }
 
-        public GameState GameState { get; set; }
+        public virtual GameState GameState { get; set; }
     }
 } 
