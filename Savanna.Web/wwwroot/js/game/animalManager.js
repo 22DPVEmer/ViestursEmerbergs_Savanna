@@ -1,73 +1,74 @@
 // Animal Management
 class AnimalManager {
-    async addAnimal(type, isInitialAnimal = false) {
-        if (!gameState.gameActive) {
-            uiManager.showErrorMessage(GameConstants.Messages.NoActiveGame);
+    constructor() {
+        this.animalTypes = [];
+        this.initializeAnimalTypes();
+    }
+
+    async initializeAnimalTypes() {
+        try {
+            const response = await fetch(GameConstants.Api.Endpoints.ANIMAL_TYPES, {
+                method: GameConstants.Api.Methods.GET
+            });
+
+            if (!response.ok) {
+                throw new Error(GameConstants.Messages.Error.FAILED_TO_INITIALIZE);
+            }
+
+            this.animalTypes = await response.json();
+            this.setupAnimalControls();
+        } catch (error) {
+            uiManager.showErrorMessage(GameConstants.Messages.Error.FAILED_TO_INITIALIZE);
+        }
+    }
+
+    setupAnimalControls() {
+        const container = document.getElementById('animalControls');
+        if (!container) return;
+
+        container.innerHTML = '';
+        
+        this.animalTypes.forEach(type => {
+            const button = document.createElement('button');
+            button.className = `btn btn-${GameConstants.Animals.Colors[type.toUpperCase()]} me-2`;
+            button.innerHTML = `${this.getAnimalIcon(type)} Add ${type}`;
+            button.onclick = () => this.addAnimal(type);
+            container.appendChild(button);
+        });
+    }
+
+    getAnimalIcon(type) {
+        const upperType = type.toUpperCase();
+        return gameState.displayMode === GameConstants.Game.Display.ICONS
+            ? GameConstants.Animals.Icons[upperType]
+            : GameConstants.Animals.Text[upperType];
+    }
+
+    async addAnimal(type, isInitial = false) {
+        if (!gameState.gameActive && !isInitial) {
+            uiManager.showErrorMessage(GameConstants.Messages.Error.NO_ACTIVE_GAME);
             return;
         }
 
         try {
-            const response = await fetch('/api/games/add-animal', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(type)
+            const response = await fetch(GameConstants.Api.Endpoints.ADD_ANIMAL, {
+                method: GameConstants.Api.Methods.POST,
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ animalType: type })
             });
 
             if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || GameConstants.Messages.FailedToAddAnimal);
+                throw new Error(GameConstants.Messages.Error.FAILED_TO_ADD_ANIMAL);
             }
-            
-            gameState.hasUnsavedChanges = true;
 
-            // Only update game state if not adding initial animals
-            if (!isInitialAnimal) {
-                await gameState.updateGameState();
-            } else {
-                // For initial animals, just get the current state without updating
-                const stateResponse = await fetch('/api/games/state');
-                if (stateResponse.ok) {
-                    const stateData = await stateResponse.json();
-                    uiManager.updateUI(stateData);
-                }
+            if (!isInitial) {
+                gameState.hasUnsavedChanges = true;
+                uiManager.showSuccessMessage(GameConstants.Messages.Success.ANIMAL_ADDED);
             }
         } catch (error) {
-            uiManager.showErrorMessage(`${GameConstants.Messages.FailedToAddAnimal}: ${error.message}`);
-            
-            // If we get a "No active game" error, reset the game state
-            if (error.message.includes('No active game')) {
-                gameState.resetGameState();
-            }
-        }
-    }
-
-    async initializeAnimalButtons() {
-        try {
-            const response = await fetch('/api/games/animal-types');
-            if (!response.ok) throw new Error(GameConstants.Messages.FailedToInitControls);
-            
-            const animalTypes = await response.json();
-            const buttonContainer = document.getElementById('animalControls');
-            
-            if (buttonContainer) {
-                buttonContainer.innerHTML = ''; // Clear existing buttons
-                
-                animalTypes.forEach(type => {
-                    const button = document.createElement('button');
-                    button.id = `add${type}`;
-                    button.className = `btn btn-outline-${uiManager.animalColors[type]}`;
-                    button.disabled = true;
-                    button.innerHTML = `<i class="bi bi-plus-circle"></i> Add ${type}`;
-                    button.addEventListener('click', () => {
-                        if (gameState.gameActive) {
-                            this.addAnimal(type);
-                        }
-                    });
-                    buttonContainer.appendChild(button);
-                });
-            }
-        } catch (error) {
-            uiManager.showErrorMessage(GameConstants.Messages.FailedToInitControls);
+            uiManager.showErrorMessage(GameConstants.Messages.Error.FAILED_TO_ADD_ANIMAL);
         }
     }
 

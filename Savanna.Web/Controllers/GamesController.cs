@@ -6,6 +6,7 @@ using Savanna.Services.Interfaces;
 using Microsoft.Extensions.Logging;
 using Savanna.Services.Services;
 using Savanna.Web.Constants;
+using Savanna.Services.Constants;
 
 namespace Savanna.Web.Controllers
 {
@@ -73,8 +74,10 @@ namespace Savanna.Web.Controllers
                         Iteration = g.GameState.CurrentIteration,
                         AnimalCounts = new
                         {
-                            Lion = g.GameState.Animals.Count(a => a.AnimalType == "Lion" && a.IsAlive),
-                            Antelope = g.GameState.Animals.Count(a => a.AnimalType == "Antelope" && a.IsAlive)
+                            Lion = g.GameState.Animals.Count(a => a.AnimalType == GameConstants.AnimalTypes.Lion && a.IsAlive),
+                            Antelope = g.GameState.Animals.Count(a => a.AnimalType == GameConstants.AnimalTypes.Antelope && a.IsAlive),
+                            Tiger = g.GameState.Animals.Count(a => a.AnimalType == GameConstants.AnimalTypes.Tiger && a.IsAlive),
+                            Zebra = g.GameState.Animals.Count(a => a.AnimalType == GameConstants.AnimalTypes.Zebra && a.IsAlive)
                         }
                     })
                     .OrderByDescending(g => g.SaveDate)

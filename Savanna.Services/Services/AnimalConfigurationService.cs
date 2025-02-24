@@ -1,6 +1,8 @@
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using System.Text.Json.Serialization;
+using Savanna.Services.Exceptions;
+using Savanna.Services.Constants;
 
 namespace Savanna.Services.Services
 {
@@ -8,6 +10,7 @@ namespace Savanna.Services.Services
     {
         private readonly ILogger<AnimalConfigurationService> _logger;
         private Dictionary<string, AnimalConfig> _animalConfigs;
+        private const string CONFIG_FILE_NAME = "config.json";
 
         public AnimalConfigurationService(ILogger<AnimalConfigurationService> logger)
         {
@@ -22,18 +25,14 @@ namespace Savanna.Services.Services
         {
             try
             {
-                var configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config.json");
-                _logger.LogInformation("Looking for config.json at: {Path}", configPath);
+                var configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, CONFIG_FILE_NAME);
 
                 if (!File.Exists(configPath))
                 {
-                    _logger.LogError("config.json not found at {Path}", configPath);
-                    throw new FileNotFoundException($"Configuration file not found at {configPath}");
+                    throw new ConfigurationException(ExceptionMessages.Configuration.FileNotFound, CONFIG_FILE_NAME);
                 }
 
                 var jsonContent = File.ReadAllText(configPath);
-                _logger.LogInformation("Read config.json content: {Content}", jsonContent);
-
                 var options = new JsonSerializerOptions
                 {
                     PropertyNameCaseInsensitive = true,
@@ -42,41 +41,36 @@ namespace Savanna.Services.Services
                 };
 
                 var config = JsonSerializer.Deserialize<ConfigRoot>(jsonContent, options);
-                _logger.LogInformation("Deserialized config: {Config}", JsonSerializer.Serialize(config, options));
 
                 if (config == null)
                 {
-                    _logger.LogError("Failed to deserialize config.json");
-                    throw new InvalidOperationException("Failed to deserialize config.json");
+                    throw new ConfigurationException(ExceptionMessages.Configuration.DeserializationFailed, CONFIG_FILE_NAME);
                 }
 
                 if (config.Plugins == null)
                 {
-                    _logger.LogError("Plugins section is null in config.json");
-                    throw new InvalidOperationException("Plugins section is null in config.json");
+                    throw new ConfigurationException(ExceptionMessages.Configuration.PluginsSectionMissing, CONFIG_FILE_NAME);
                 }
 
                 if (!config.Plugins.Any())
                 {
-                    _logger.LogError("No plugins found in config.json");
-                    throw new InvalidOperationException("No plugins found in config.json");
+                    throw new ConfigurationException(ExceptionMessages.Configuration.NoPluginsFound, CONFIG_FILE_NAME);
                 }
 
                 _animalConfigs = config.Plugins;
-                _logger.LogInformation("Successfully loaded {Count} animal configurations: {Types}", 
-                    _animalConfigs.Count,
-                    string.Join(", ", _animalConfigs.Values.Select(c => c.Plugin.Name)));
             }
             catch (JsonException ex)
             {
-                _logger.LogError(ex, "JSON parsing error in config.json");
+                throw new ConfigurationException(ExceptionMessages.Configuration.InvalidJsonFormat, CONFIG_FILE_NAME, ex);
+            }
+            catch (ConfigurationException)
+            {
                 throw;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to load animal configurations");
                 _animalConfigs = new Dictionary<string, AnimalConfig>();
-                throw;
+                throw new ConfigurationException(ExceptionMessages.Configuration.LoadConfigurationFailed, CONFIG_FILE_NAME, ex);
             }
         }
     }

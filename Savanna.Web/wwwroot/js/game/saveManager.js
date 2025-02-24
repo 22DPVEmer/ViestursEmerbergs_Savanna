@@ -1,137 +1,154 @@
 // Save Management
 class SaveManager {
+    constructor() {
+        this.savedGames = [];
+    }
+
     async loadSavedGames() {
         try {
-            const response = await fetch('/api/games/saved');
-            
+            const response = await fetch(GameConstants.Api.Endpoints.SAVED, {
+                method: GameConstants.Api.Methods.GET
+            });
+
             if (!response.ok) {
-                if (response.status === 401) {
-                    return; // Not logged in, just don't show saves
-                }
-                throw new Error(GameConstants.Messages.FailedToLoadSaves);
+                throw new Error(GameConstants.Messages.Error.FAILED_TO_LOAD);
             }
-            
-            const savedGames = await response.json();
-            const container = document.getElementById('savedGames');
-            if (!container) return;
-            
-            container.innerHTML = ''; // Clear existing games
-            
-            if (savedGames.length === 0) {
-                container.innerHTML = `
-                    <div class="list-group-item text-center text-muted">
-                        ${GameConstants.Messages.NoSavedGames}
-                    </div>
-                `;
+
+            const games = await response.json();
+            this.savedGames = games;
+
+            if (games.length === 0) {
+                uiManager.showMessage(GameConstants.Messages.Error.NO_SAVED_GAMES);
                 return;
             }
-            
-            savedGames.forEach(game => {
-                const totalLivingAnimals = game.animalCounts.Lion + game.animalCounts.Antelope;
-                
-                const gameItem = document.createElement('div');
-                gameItem.className = 'list-group-item';
-                gameItem.innerHTML = `
-                    <div class="d-flex w-100 justify-content-between align-items-center">
-                        <div>
-                            <h6 class="mb-1">${game.name}</h6>
-                            <small class="text-muted">Saved: ${new Date(game.saveDate).toLocaleString()}</small>
-                        </div>
-                        <div class="btn-group btn-group-sm">
-                            <button class="btn btn-outline-primary" onclick="saveManager.loadGame(${game.id}, ${game.iteration})">
-                                <i class="bi bi-play-fill"></i> Load
-                            </button>
-                            <button class="btn btn-outline-danger" onclick="saveManager.deleteSave(${game.id})">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="mt-2">
-                        <small class="me-2">Iteration: ${game.iteration}</small>
-                        <small>Living Animals: ${totalLivingAnimals}</small>
-                    </div>
-                `;
-                container.appendChild(gameItem);
-            });
+
+            this.displaySavedGames(games);
         } catch (error) {
-            uiManager.showErrorMessage(error.message);
+            uiManager.showErrorMessage(GameConstants.Messages.Error.FAILED_TO_LOAD);
         }
     }
 
-    async loadGame(saveId, savedIteration) {
+    async saveGame(saveName) {
         try {
-            // First, quit any existing game
-            if (gameState.gameActive) {
-                await gameControls.quitGame();
-            }
-            
-            const response = await fetch(`/api/games/load/${saveId}`, {
-                method: 'POST'
+            const response = await fetch(GameConstants.Api.Endpoints.SAVE, {
+                method: GameConstants.Api.Methods.POST,
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ name: saveName })
             });
-            
+
             if (!response.ok) {
-                const data = await response.json();
-                throw new Error(data.message || GameConstants.Messages.FailedToLoadGame);
-            }
-            
-            const stateResponse = await fetch('/api/games/state');
-            if (!stateResponse.ok) {
-                throw new Error(GameConstants.Messages.FailedToLoadGame);
+                throw new Error(GameConstants.Messages.Error.FAILED_TO_SAVE);
             }
 
-            const stateData = await stateResponse.json();
-            if (!stateData) {
-                throw new Error(GameConstants.Messages.FailedToLoadGame);
+            gameState.hasUnsavedChanges = false;
+            uiManager.showSuccessMessage(GameConstants.Messages.Success.GAME_SAVED);
+            await this.loadSavedGames();
+        } catch (error) {
+            uiManager.showErrorMessage(GameConstants.Messages.Error.FAILED_TO_SAVE);
+        }
+    }
+
+    async loadGame(saveId) {
+        try {
+            if (gameState.hasUnsavedChanges && 
+                !confirm(GameConstants.Messages.Confirm.UNSAVED_CHANGES)) {
+                return;
+            }
+
+            const response = await fetch(`${GameConstants.Api.Endpoints.LOAD}/${saveId}`, {
+                method: GameConstants.Api.Methods.POST
+            });
+
+            if (!response.ok) {
+                throw new Error(GameConstants.Messages.Error.FAILED_TO_LOAD);
             }
 
             gameState.gameActive = true;
-            uiManager.enableGameControls();
-            gameState.startGameStatePolling();
-            uiManager.updateUI(stateData);
-            uiManager.showSuccessMessage(GameConstants.Messages.GameLoaded);
-        } catch (error) {
-            uiManager.showErrorMessage(error.message);
-            gameState.resetGameState();
-        }
-    }
-
-    async saveGame() {
-        try {
-            const response = await fetch('/api/games/save', { method: 'POST' });
-            if (!response.ok) {
-                const data = await response.json();
-                throw new Error(data.message || GameConstants.Messages.FailedToSaveGame);
-            }
-            
             gameState.hasUnsavedChanges = false;
-            await this.loadSavedGames(); // Refresh the saves list
-            uiManager.showSuccessMessage(GameConstants.Messages.GameSaved);
+            gameState.startGameStatePolling();
+            uiManager.showSuccessMessage(GameConstants.Messages.Success.GAME_LOADED);
         } catch (error) {
-            uiManager.showErrorMessage(error.message);
+            uiManager.showErrorMessage(GameConstants.Messages.Error.FAILED_TO_LOAD);
         }
     }
 
     async deleteSave(saveId) {
-        if (!confirm(GameConstants.Confirmations.DeleteSave)) {
-            return;
-        }
-        
         try {
-            const response = await fetch(`/api/games/saved/${saveId}`, { 
-                method: 'DELETE'
-            });
-            
-            if (!response.ok) {
-                const data = await response.json();
-                throw new Error(data.message || GameConstants.Messages.FailedToDeleteSave);
+            if (!confirm(GameConstants.Messages.Confirm.DELETE_SAVE)) {
+                return;
             }
-            
-            await this.loadSavedGames(); // Refresh the list
-            uiManager.showSuccessMessage(GameConstants.Messages.SaveDeleted);
+
+            const response = await fetch(`${GameConstants.Api.Endpoints.LOAD}/${saveId}`, {
+                method: GameConstants.Api.Methods.DELETE
+            });
+
+            if (!response.ok) {
+                throw new Error(GameConstants.Messages.Error.FAILED_TO_DELETE);
+            }
+
+            uiManager.showSuccessMessage(GameConstants.Messages.Success.SAVE_DELETED);
+            await this.loadSavedGames();
         } catch (error) {
-            const errorMessage = error.message || GameConstants.Messages.FailedToDeleteSave;
-            uiManager.showErrorMessage(`Error deleting save: ${errorMessage}`);
+            uiManager.showErrorMessage(GameConstants.Messages.Error.FAILED_TO_DELETE);
         }
+    }
+
+    displaySavedGames(games) {
+        const container = document.getElementById('savedGames');
+        container.innerHTML = '';
+
+        games.forEach(game => {
+            const row = document.createElement('tr');
+            
+            const nameCell = document.createElement('td');
+            nameCell.textContent = game.name;
+            
+            const dateCell = document.createElement('td');
+            dateCell.textContent = new Date(game.saveDate).toLocaleString();
+            
+            const iterationCell = document.createElement('td');
+            iterationCell.textContent = game.iteration;
+            
+            const animalCountsCell = document.createElement('td');
+            const counts = [];
+            if (game.animalCounts.lion > 0) {
+                counts.push(`${game.animalCounts.lion} ${GameConstants.Animals.Icons.LION}`);
+            }
+            if (game.animalCounts.antelope > 0) {
+                counts.push(`${game.animalCounts.antelope} ${GameConstants.Animals.Icons.ANTELOPE}`);
+            }
+            if (game.animalCounts.tiger > 0) {
+                counts.push(`${game.animalCounts.tiger} ${GameConstants.Animals.Icons.TIGER}`);
+            }
+            if (game.animalCounts.zebra > 0) {
+                counts.push(`${game.animalCounts.zebra} ${GameConstants.Animals.Icons.ZEBRA}`);
+            }
+            animalCountsCell.textContent = counts.join(' | ');
+            
+            const actionsCell = document.createElement('td');
+            const loadButton = document.createElement('button');
+            loadButton.className = 'btn btn-primary btn-sm me-2';
+            loadButton.textContent = 'Load';
+            loadButton.onclick = () => this.loadGame(game.id);
+            
+            const deleteButton = document.createElement('button');
+            deleteButton.className = 'btn btn-danger btn-sm';
+            deleteButton.textContent = 'Delete';
+            deleteButton.onclick = () => this.deleteSave(game.id);
+            
+            actionsCell.appendChild(loadButton);
+            actionsCell.appendChild(deleteButton);
+            
+            row.appendChild(nameCell);
+            row.appendChild(dateCell);
+            row.appendChild(iterationCell);
+            row.appendChild(animalCountsCell);
+            row.appendChild(actionsCell);
+            
+            container.appendChild(row);
+        });
     }
 }
 

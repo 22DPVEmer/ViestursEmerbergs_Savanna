@@ -21,154 +21,154 @@ class UIManager {
             'Tiger': 'warning',
             'Zebra': 'secondary'
         };
+
+        this.messageTimeout = null;
+        this.setupEventListeners();
+    }
+
+    setupEventListeners() {
+        const displayModeToggle = document.getElementById('displayModeToggle');
+        if (displayModeToggle) {
+            displayModeToggle.addEventListener('change', () => {
+                gameState.displayMode = displayModeToggle.checked 
+                    ? GameConstants.Game.Display.ICONS 
+                    : GameConstants.Game.Display.TEXT;
+                localStorage.setItem(
+                    GameConstants.LocalStorage.Keys.DISPLAY_MODE, 
+                    gameState.displayMode
+                );
+                this.updateGameGrid();
+            });
+        }
+    }
+
+    showMessage(message, isError = false) {
+        const messageElement = document.getElementById('gameMessage');
+        if (!messageElement) return;
+
+        messageElement.textContent = message;
+        messageElement.className = `alert ${isError ? 'alert-danger' : 'alert-info'} mt-3`;
+        messageElement.style.display = 'block';
+
+        if (this.messageTimeout) {
+            clearTimeout(this.messageTimeout);
+        }
+
+        this.messageTimeout = setTimeout(() => {
+            messageElement.style.display = 'none';
+        }, GameConstants.Game.Intervals.MESSAGE_DISPLAY);
     }
 
     showErrorMessage(message) {
-        const errorDiv = document.createElement('div');
-        errorDiv.className = 'alert alert-danger alert-dismissible fade show';
-        errorDiv.innerHTML = `
-            ${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        `;
-        
-        const container = document.querySelector('.card-body') || document.body;
-        container.insertAdjacentElement('afterbegin', errorDiv);
-
-        setTimeout(() => {
-            errorDiv.remove();
-        }, 5000);
+        this.showMessage(message, true);
     }
 
     showSuccessMessage(message) {
-        const successDiv = document.createElement('div');
-        successDiv.className = 'alert alert-success alert-dismissible fade show';
-        successDiv.innerHTML = `
-            ${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        `;
-        
-        const container = document.querySelector('.card-body') || document.body;
-        container.insertAdjacentElement('afterbegin', successDiv);
-
-        setTimeout(() => {
-            successDiv.remove();
-        }, 5000);
+        this.showMessage(message, false);
     }
 
     updateUI(gameState) {
-        // Update iteration counter
-        document.getElementById('iterationCounter').textContent = gameState.iteration;
-
-        // First reset all counts to 0
-        const animalTypes = Object.keys(this.animalIcons);
-        animalTypes.forEach(type => {
-            const countElement = document.getElementById(`${type.toLowerCase()}Count`);
-            if (countElement) {
-                countElement.textContent = '0';
-            }
-        });
-
-        // Count only living animals
-        const livingAnimals = gameState.animals.filter(animal => animal.isAlive);
-        const animalCounts = {};
-        livingAnimals.forEach(animal => {
-            animalCounts[animal.type] = (animalCounts[animal.type] || 0) + 1;
-        });
-
-        // Update the counts based on living animals
-        Object.entries(animalCounts).forEach(([type, count]) => {
-            const countElement = document.getElementById(`${type.toLowerCase()}Count`);
-            if (countElement) {
-                countElement.textContent = count;
-            }
-        });
-
-        // Update game grid
-        this.updateGameGrid(gameState.animals);
+        this.updateGameGrid(gameState);
+        this.updateStatistics(gameState);
+        this.updateControls(gameState);
     }
 
-    updateGameGrid(animals) {
-        // First clear all cells
-        const cells = document.querySelectorAll('.game-cell');
-        cells.forEach(cell => {
-            cell.textContent = '';
-            cell.className = 'game-cell';
-            cell.dataset.animalType = '';
-        });
+    updateGameGrid(gameState) {
+        const grid = document.getElementById('gameGrid');
+        if (!grid) return;
 
-        // Then only update cells with living animals
-        animals.filter(animal => animal.isAlive).forEach(animal => {
-            const index = animal.y * 20 + animal.x;
-            const cell = cells[index];
+        grid.innerHTML = '';
+        grid.style.gridTemplateColumns = `repeat(${GameConstants.Game.Grid.WIDTH}, 1fr)`;
+
+        for (let i = 0; i < GameConstants.Game.Grid.TOTAL_CELLS; i++) {
+            const cell = document.createElement('div');
+            cell.className = GameConstants.CSS.Classes.GAME_CELL;
+            grid.appendChild(cell);
+        }
+
+        if (!gameState?.animals) return;
+
+        gameState.animals.forEach(animal => {
+            if (!animal.isAlive) return;
+
+            const cell = grid.children[animal.position];
             if (cell) {
-                cell.dataset.animalType = animal.type;
-                cell.className = `game-cell ${animal.type.toLowerCase()}`;
-                cell.textContent = gameState.displayMode === 'icons' 
-                    ? this.animalIcons[animal.type] 
-                    : this.animalText[animal.type];
+                const type = animal.animalType.toUpperCase();
+                cell.className = `${GameConstants.CSS.Classes.GAME_CELL} ${GameConstants.CSS.Classes[type]}`;
+                cell.textContent = this.getAnimalDisplay(animal.animalType);
             }
         });
     }
 
-    resetUI() {
+    getAnimalDisplay(type) {
+        const upperType = type.toUpperCase();
+        return gameState.displayMode === GameConstants.Game.Display.ICONS
+            ? GameConstants.Animals.Icons[upperType]
+            : GameConstants.Animals.Text[upperType];
+    }
+
+    updateStatistics(gameState) {
+        if (!gameState) return;
+
+        const stats = {
+            [GameConstants.Animals.Types.LION]: 0,
+            [GameConstants.Animals.Types.ANTELOPE]: 0,
+            [GameConstants.Animals.Types.TIGER]: 0,
+            [GameConstants.Animals.Types.ZEBRA]: 0
+        };
+
+        gameState.animals.forEach(animal => {
+            if (animal.isAlive) {
+                stats[animal.animalType]++;
+            }
+        });
+
+        Object.entries(stats).forEach(([type, count]) => {
+            const element = document.getElementById(`${type.toLowerCase()}Count`);
+            if (element) {
+                element.textContent = count;
+            }
+        });
+
+        const iterationElement = document.getElementById('iteration');
+        if (iterationElement) {
+            iterationElement.textContent = gameState.currentIteration;
+        }
+    }
+
+    updateControls(gameState) {
         const startButton = document.getElementById('startGame');
         const quitButton = document.getElementById('quitGame');
+        const pauseButton = document.getElementById('togglePause');
         const saveButton = document.getElementById('saveGame');
-        const pauseButton = document.getElementById('pauseGame');
+        const animalControls = document.getElementById('animalControls');
 
-        if (startButton) startButton.disabled = false;
-        if (quitButton) quitButton.disabled = true;
-        if (saveButton) saveButton.disabled = true;
-        if (pauseButton) pauseButton.disabled = true;
-
-        // Disable all animal buttons
-        document.querySelectorAll('[id^="add"]').forEach(button => {
-            button.disabled = true;
-        });
-
-        this.updatePauseButtonText();
-
-        // Clear the game grid
-        const cells = document.querySelectorAll('.game-cell');
-        cells.forEach(cell => {
-            cell.textContent = '';
-            cell.className = 'game-cell';
-            cell.dataset.animalType = '';
-        });
-
-        // Reset all animal counters
-        Object.keys(this.animalIcons).forEach(type => {
-            const countElement = document.getElementById(`${type.toLowerCase()}Count`);
-            if (countElement) countElement.textContent = '0';
-        });
-
-        document.getElementById('iterationCounter').textContent = '0';
+        if (startButton) startButton.style.display = gameState.gameActive ? 'none' : 'block';
+        if (quitButton) quitButton.style.display = gameState.gameActive ? 'block' : 'none';
+        if (pauseButton) {
+            pauseButton.style.display = gameState.gameActive ? 'block' : 'none';
+            this.updatePauseButtonText();
+        }
+        if (saveButton) saveButton.style.display = gameState.gameActive ? 'block' : 'none';
+        if (animalControls) animalControls.style.display = gameState.gameActive ? 'block' : 'none';
     }
 
     updatePauseButtonText() {
-        const pauseButton = document.getElementById('pauseGame');
+        const pauseButton = document.getElementById('togglePause');
         if (pauseButton) {
-            pauseButton.textContent = gameState.isPaused ? 'Resume Game' : 'Pause Game';
+            pauseButton.textContent = gameState.isPaused ? '▶ Resume' : '⏸ Pause';
         }
     }
 
     enableGameControls() {
-        const startButton = document.getElementById('startGame');
-        const quitButton = document.getElementById('quitGame');
-        const saveButton = document.getElementById('saveGame');
-        const pauseButton = document.getElementById('pauseGame');
+        const buttons = document.querySelectorAll('#animalControls button');
+        buttons.forEach(button => button.disabled = false);
+    }
 
-        if (startButton) startButton.disabled = true;
-        if (quitButton) quitButton.disabled = false;
-        if (saveButton) saveButton.disabled = false;
-        if (pauseButton) pauseButton.disabled = false;
-
-        // Enable all animal buttons
-        document.querySelectorAll('[id^="add"]').forEach(button => {
-            button.disabled = false;
-        });
-
-        this.updatePauseButtonText();
+    resetUI() {
+        this.updateGameGrid({ animals: [] });
+        this.updateStatistics({ animals: [] });
+        this.updateControls({ gameActive: false });
     }
 }
 

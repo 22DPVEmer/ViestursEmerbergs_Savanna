@@ -10,6 +10,7 @@ using Savanna.Services.Interfaces;
 using System.Collections.Concurrent;
 using Savanna.GameEngine.Models;
 using Savanna.Services.Constants;
+using Savanna.Services.Exceptions;
 
 namespace Savanna.Services.Services
 {
@@ -74,7 +75,7 @@ namespace Savanna.Services.Services
                     if (!_games.TryAdd(newId, newGame))
                     {
                         _logger.LogError(GameServiceConstants.LogMessages.FailedToAddGame, newId);
-                        throw new InvalidOperationException(GameServiceConstants.ErrorMessages.FailedToCreateGame);
+                        throw new GameServiceException(ExceptionMessages.Game.GameAlreadyExists, userId, newId);
                     }
 
                     _logger.LogInformation(GameServiceConstants.LogMessages.NewGameCreated, newId, userId);
@@ -143,7 +144,7 @@ namespace Savanna.Services.Services
                     _games.TryRemove(failedGameId, out _);
                     _userGameMap.TryRemove(userId, out _);
                 }
-                throw;
+                throw new GameServiceException(ExceptionMessages.Game.GameNotFound, userId, ex);
             }
         }
 
@@ -180,13 +181,13 @@ namespace Savanna.Services.Services
                 if (string.IsNullOrEmpty(gameId))
                 {
                     _logger.LogWarning(GameServiceConstants.LogMessages.NoActiveGame);
-                    throw new InvalidOperationException(GameServiceConstants.LogMessages.NoActiveGame);
+                    throw new GameServiceException(ExceptionMessages.Game.GameNotFound, userId);
                 }
 
                 if (!_games.TryGetValue(gameId, out var game))
                 {
                     _logger.LogWarning(GameServiceConstants.LogMessages.GameInstanceNotFound);
-                    throw new InvalidOperationException(GameServiceConstants.LogMessages.GameInstanceNotFound);
+                    throw new GameServiceException(ExceptionMessages.Game.GameNotFound, userId, gameId);
                 }
 
                 // Get the animal configuration to validate the type
@@ -197,7 +198,7 @@ namespace Savanna.Services.Services
                 if (config == null)
                 {
                     _logger.LogWarning(GameServiceConstants.LogMessages.ConfigNotFound, type);
-                    throw new ArgumentException($"Invalid animal type: {type}");
+                    throw new GameServiceException($"Invalid animal type: {type}", userId, gameId);
                 }
 
                 var symbol = config.Configuration.Symbol;
@@ -263,7 +264,7 @@ namespace Savanna.Services.Services
                 if (game == null)
                 {
                     _logger.LogWarning(GameServiceConstants.LogMessages.NoActiveGame);
-                    throw new InvalidOperationException(GameServiceConstants.LogMessages.NoActiveGame);
+                    throw new GameServiceException(ExceptionMessages.Game.GameNotFound, userEmail);
                 }
 
                 using var scope = _serviceProvider.CreateScope();
@@ -273,14 +274,14 @@ namespace Savanna.Services.Services
                 if (user == null)
                 {
                     _logger.LogWarning(GameServiceConstants.LogMessages.UserNotFound, userEmail);
-                    throw new InvalidOperationException(GameServiceConstants.ErrorMessages.UserAccountNotFound);
+                    throw new GameServiceException(ExceptionMessages.User.UserNotFound, userEmail);
                 }
 
                 var gameState = game.GetGameState();
                 if (gameState == null)
                 {
                     _logger.LogError(GameServiceConstants.ErrorMessages.FailedToGetGameState);
-                    throw new InvalidOperationException(GameServiceConstants.ErrorMessages.FailedToGetGameState);
+                    throw new GameServiceException(ExceptionMessages.Game.InvalidGameState, userEmail);
                 }
 
                 _logger.LogInformation(GameServiceConstants.LogMessages.CreatingGameState, 
@@ -322,7 +323,7 @@ namespace Savanna.Services.Services
                 catch (DbUpdateException ex)
                 {
                     _logger.LogError(ex, GameServiceConstants.LogMessages.DatabaseError, ex.InnerException?.Message ?? ex.Message);
-                    throw new InvalidOperationException(GameServiceConstants.ErrorMessages.FailedToSaveGame, ex);
+                    throw new GameServiceException("Failed to save game to database", userEmail, ex);
                 }
             }
             catch (Exception ex)
@@ -349,7 +350,7 @@ namespace Savanna.Services.Services
             if (user == null)
             {
                 _logger.LogWarning(GameServiceConstants.LogMessages.UserNotFound, userId);
-                throw new InvalidOperationException(GameServiceConstants.ErrorMessages.UserAccountNotFound);
+                throw new GameServiceException(ExceptionMessages.User.UserNotFound, userId);
             }
 
             var save = await dbContext.GameSaves
@@ -360,7 +361,7 @@ namespace Savanna.Services.Services
             if (save == null || save.GameState == null)
             {
                 _logger.LogWarning(GameServiceConstants.LogMessages.GameInstanceNotFound, saveId);
-                throw new InvalidOperationException($"Save {saveId} not found");
+                throw new GameServiceException(ExceptionMessages.Game.SaveNotFound, userId);
             }
 
             // First, ensure any existing game is cleaned up
@@ -399,7 +400,7 @@ namespace Savanna.Services.Services
             else
             {
                 _logger.LogError(GameServiceConstants.LogMessages.FailedToInitialize);
-                throw new InvalidOperationException(GameServiceConstants.ErrorMessages.FailedToCreateGame);
+                throw new GameServiceException(ExceptionMessages.Game.GameAlreadyExists, userId, newGameId);
             }
         }
 

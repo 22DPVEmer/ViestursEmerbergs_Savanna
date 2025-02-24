@@ -7,6 +7,7 @@ using Savanna.Services.Interfaces;
 using Savanna.Services.Services;
 using Savanna.Common.Plugin;
 using Savanna.Common.Constants;
+using Savanna.Web.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -88,6 +89,8 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
+
+app.UseExceptionHandling();
 
 app.UseAuthentication();
 app.UseAuthorization();
