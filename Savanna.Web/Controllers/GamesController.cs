@@ -73,8 +73,8 @@ namespace Savanna.Web.Controllers
                         Iteration = g.GameState.CurrentIteration,
                         AnimalCounts = new
                         {
-                            Lion = g.GameState.Animals.Count(a => a.AnimalType == "Lion"),
-                            Antelope = g.GameState.Animals.Count(a => a.AnimalType == "Antelope")
+                            Lion = g.GameState.Animals.Count(a => a.AnimalType == "Lion" && a.IsAlive),
+                            Antelope = g.GameState.Animals.Count(a => a.AnimalType == "Antelope" && a.IsAlive)
                         }
                     })
                     .OrderByDescending(g => g.SaveDate)
@@ -290,10 +290,21 @@ namespace Savanna.Web.Controllers
             {
                 var userId = GetUserId();
                 
+                // Get the actual user ID if authenticated
+                string actualUserId = userId;
+                if (User.Identity?.IsAuthenticated == true)
+                {
+                    var user = await _context.Users.FirstOrDefaultAsync(u => u.UserName == userId);
+                    if (user != null)
+                    {
+                        actualUserId = user.Id;
+                    }
+                }
+
                 // Find the save and its associated state
                 var save = await _context.GameSaves
                     .Include(g => g.GameState)
-                    .FirstOrDefaultAsync(g => g.Id == saveId && g.UserId == userId);
+                    .FirstOrDefaultAsync(g => g.Id == saveId && g.UserId == actualUserId);
 
                 if (save == null)
                 {

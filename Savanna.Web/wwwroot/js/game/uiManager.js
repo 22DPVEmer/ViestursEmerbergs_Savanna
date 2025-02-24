@@ -59,11 +59,27 @@ class UIManager {
         // Update iteration counter
         document.getElementById('iterationCounter').textContent = gameState.iteration;
 
-        // Update all animal counts
-        Object.keys(gameState.animalCounts).forEach(type => {
+        // First reset all counts to 0
+        const animalTypes = Object.keys(this.animalIcons);
+        animalTypes.forEach(type => {
             const countElement = document.getElementById(`${type.toLowerCase()}Count`);
             if (countElement) {
-                countElement.textContent = gameState.animalCounts[type] || 0;
+                countElement.textContent = '0';
+            }
+        });
+
+        // Count only living animals
+        const livingAnimals = gameState.animals.filter(animal => animal.isAlive);
+        const animalCounts = {};
+        livingAnimals.forEach(animal => {
+            animalCounts[animal.type] = (animalCounts[animal.type] || 0) + 1;
+        });
+
+        // Update the counts based on living animals
+        Object.entries(animalCounts).forEach(([type, count]) => {
+            const countElement = document.getElementById(`${type.toLowerCase()}Count`);
+            if (countElement) {
+                countElement.textContent = count;
             }
         });
 
@@ -72,16 +88,16 @@ class UIManager {
     }
 
     updateGameGrid(animals) {
+        // First clear all cells
         const cells = document.querySelectorAll('.game-cell');
-        if (!cells.length) return;
-
         cells.forEach(cell => {
             cell.textContent = '';
             cell.className = 'game-cell';
             cell.dataset.animalType = '';
         });
 
-        animals.forEach(animal => {
+        // Then only update cells with living animals
+        animals.filter(animal => animal.isAlive).forEach(animal => {
             const index = animal.y * 20 + animal.x;
             const cell = cells[index];
             if (cell) {

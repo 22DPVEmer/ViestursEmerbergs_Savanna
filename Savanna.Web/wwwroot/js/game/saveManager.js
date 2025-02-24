@@ -27,8 +27,7 @@ class SaveManager {
             }
             
             savedGames.forEach(game => {
-                const lionCount = game.animalCounts.lion || 0;
-                const antelopeCount = game.animalCounts.antelope || 0;
+                const totalLivingAnimals = game.animalCounts.Lion + game.animalCounts.Antelope;
                 
                 const gameItem = document.createElement('div');
                 gameItem.className = 'list-group-item';
@@ -49,8 +48,7 @@ class SaveManager {
                     </div>
                     <div class="mt-2">
                         <small class="me-2">Iteration: ${game.iteration}</small>
-                        <small class="me-2">Lions: ${lionCount}</small>
-                        <small>Antelopes: ${antelopeCount}</small>
+                        <small>Living Animals: ${totalLivingAnimals}</small>
                     </div>
                 `;
                 container.appendChild(gameItem);
@@ -131,7 +129,8 @@ class SaveManager {
             await this.loadSavedGames(); // Refresh the list
             uiManager.showSuccessMessage(GameConstants.Messages.SaveDeleted);
         } catch (error) {
-            uiManager.showErrorMessage(error.message);
+            const errorMessage = error.message || GameConstants.Messages.FailedToDeleteSave;
+            uiManager.showErrorMessage(`Error deleting save: ${errorMessage}`);
         }
     }
 }
