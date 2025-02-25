@@ -2,6 +2,7 @@ using System.Net;
 using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Savanna.Services.Exceptions;
+using Savanna.Web.Constants;
 
 namespace Savanna.Web.Middleware
 {
@@ -37,42 +38,42 @@ namespace Savanna.Web.Middleware
             switch (exception)
             {
                 case GameServiceException gameEx:
-                    context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-                    response.Message = "Game service error";
+                    context.Response.StatusCode = MiddlewareConstants.StatusCodes.BadRequest;
+                    response.Message = MiddlewareConstants.Messages.GameServiceError;
                     response.Details = gameEx.Message;
                     response.UserId = gameEx.UserId;
                     response.GameId = gameEx.GameId;
                     break;
 
                 case ConfigurationException configEx:
-                    context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-                    response.Message = "Configuration error";
+                    context.Response.StatusCode = MiddlewareConstants.StatusCodes.BadRequest;
+                    response.Message = MiddlewareConstants.Messages.ConfigurationError;
                     response.Details = configEx.Message;
                     response.ConfigFile = configEx.ConfigFile;
                     break;
 
                 case FileNotFoundException fileEx:
-                    context.Response.StatusCode = (int)HttpStatusCode.NotFound;
-                    response.Message = "File not found";
+                    context.Response.StatusCode = MiddlewareConstants.StatusCodes.NotFound;
+                    response.Message = MiddlewareConstants.Messages.FileNotFound;
                     response.Details = fileEx.Message;
                     break;
 
                 case JsonException jsonEx:
-                    context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-                    response.Message = "Invalid JSON format";
+                    context.Response.StatusCode = MiddlewareConstants.StatusCodes.BadRequest;
+                    response.Message = MiddlewareConstants.Messages.InvalidJsonFormat;
                     response.Details = jsonEx.Message;
                     break;
 
                 case UnauthorizedAccessException:
-                    context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
-                    response.Message = "Unauthorized access";
-                    response.Details = "You do not have permission to perform this action";
+                    context.Response.StatusCode = MiddlewareConstants.StatusCodes.Unauthorized;
+                    response.Message = MiddlewareConstants.Messages.UnauthorizedAccess;
+                    response.Details = MiddlewareConstants.Messages.UnauthorizedAccessDetails;
                     break;
 
                 default:
-                    context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-                    response.Message = "An error occurred while processing your request";
-                    response.Details = "Please try again later";
+                    context.Response.StatusCode = MiddlewareConstants.StatusCodes.InternalServerError;
+                    response.Message = MiddlewareConstants.Messages.InternalServerError;
+                    response.Details = MiddlewareConstants.Messages.InternalServerErrorDetails;
                     break;
             }
 

@@ -3,6 +3,8 @@ using Microsoft.Extensions.Logging;
 using System.Text.Json.Serialization;
 using Savanna.Services.Exceptions;
 using Savanna.Services.Constants;
+using Savanna.Services.Models;
+using Savanna.Infrastructure.Constants;
 
 namespace Savanna.Services.Services
 {
@@ -10,7 +12,6 @@ namespace Savanna.Services.Services
     {
         private readonly ILogger<AnimalConfigurationService> _logger;
         private Dictionary<string, AnimalConfig> _animalConfigs;
-        private const string CONFIG_FILE_NAME = "config.json";
 
         public AnimalConfigurationService(ILogger<AnimalConfigurationService> logger)
         {
@@ -25,11 +26,11 @@ namespace Savanna.Services.Services
         {
             try
             {
-                var configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, CONFIG_FILE_NAME);
+                var configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ProjectPaths.ConfigFilePath);
 
                 if (!File.Exists(configPath))
                 {
-                    throw new ConfigurationException(ExceptionMessages.Configuration.FileNotFound, CONFIG_FILE_NAME);
+                    throw new ConfigurationException(ExceptionMessages.Configuration.FileNotFound, ProjectPaths.ConfigFilePath);
                 }
 
                 var jsonContent = File.ReadAllText(configPath);
@@ -44,24 +45,24 @@ namespace Savanna.Services.Services
 
                 if (config == null)
                 {
-                    throw new ConfigurationException(ExceptionMessages.Configuration.DeserializationFailed, CONFIG_FILE_NAME);
+                    throw new ConfigurationException(ExceptionMessages.Configuration.DeserializationFailed, ProjectPaths.ConfigFilePath);
                 }
 
                 if (config.Plugins == null)
                 {
-                    throw new ConfigurationException(ExceptionMessages.Configuration.PluginsSectionMissing, CONFIG_FILE_NAME);
+                    throw new ConfigurationException(ExceptionMessages.Configuration.PluginsSectionMissing, ProjectPaths.ConfigFilePath);
                 }
 
                 if (!config.Plugins.Any())
                 {
-                    throw new ConfigurationException(ExceptionMessages.Configuration.NoPluginsFound, CONFIG_FILE_NAME);
+                    throw new ConfigurationException(ExceptionMessages.Configuration.NoPluginsFound, ProjectPaths.ConfigFilePath);
                 }
 
                 _animalConfigs = config.Plugins;
             }
             catch (JsonException ex)
             {
-                throw new ConfigurationException(ExceptionMessages.Configuration.InvalidJsonFormat, CONFIG_FILE_NAME, ex);
+                throw new ConfigurationException(ExceptionMessages.Configuration.InvalidJsonFormat, ProjectPaths.ConfigFilePath, ex);
             }
             catch (ConfigurationException)
             {
@@ -70,56 +71,8 @@ namespace Savanna.Services.Services
             catch (Exception ex)
             {
                 _animalConfigs = new Dictionary<string, AnimalConfig>();
-                throw new ConfigurationException(ExceptionMessages.Configuration.LoadConfigurationFailed, CONFIG_FILE_NAME, ex);
+                throw new ConfigurationException(ExceptionMessages.Configuration.LoadConfigurationFailed, ProjectPaths.ConfigFilePath, ex);
             }
         }
-    }
-
-    public class ConfigRoot
-    {
-        [JsonPropertyName("plugins")]
-        public Dictionary<string, AnimalConfig> Plugins { get; set; } = new();
-    }
-
-    public class AnimalConfig
-    {
-        public Configuration Configuration { get; set; } = new();
-        public Movement Movement { get; set; } = new();
-        public Reproduction Reproduction { get; set; } = new();
-        public Hunting? Hunting { get; set; }
-        public Plugin Plugin { get; set; } = new();
-    }
-
-    public class Configuration
-    {
-        public string Symbol { get; set; } = "";
-        public int Speed { get; set; }
-        public int VisionRange { get; set; }
-    }
-
-    public class Movement
-    {
-        public int MovementCost { get; set; }
-        public int MaxMovementAttempts { get; set; }
-    }
-
-    public class Reproduction
-    {
-        public int RequiredConsecutiveRounds { get; set; }
-        public double MinimumHealthToReproduce { get; set; }
-        public int MatingDistance { get; set; }
-        public double ReproductionCost { get; set; }
-    }
-
-    public class Hunting
-    {
-        public string[] PreySymbols { get; set; } = Array.Empty<string>();
-        public int HuntingRange { get; set; }
-    }
-
-    public class Plugin
-    {
-        public string Name { get; set; } = "";
-        public string Version { get; set; } = "";
     }
 } 

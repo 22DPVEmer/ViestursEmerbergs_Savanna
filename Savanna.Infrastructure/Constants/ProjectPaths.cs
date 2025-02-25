@@ -6,5 +6,6 @@ namespace Savanna.Infrastructure.Constants
         public const string InfrastructureProjectName = "Savanna.Infrastructure";
 
         public const string AppSettingsPath = "appsettings.json";
+        public const string ConfigFilePath = "config.json";
     }
 } 
