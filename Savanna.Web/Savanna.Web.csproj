@@ -9,6 +9,9 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.11" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="8.0.11" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.2.0" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="9.0.2" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.Json" Version="9.0.2" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.11" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.11" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.11">
@@ -19,11 +22,54 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.2" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.7" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Savanna.Infrastructure\Savanna.Infrastructure.csproj" />
+    <ProjectReference Include="..\Savanna.Services\Savanna.Services.csproj" />
+    <ProjectReference Include="..\Savanna.Plugins.Tiger\Savanna.Plugins.Tiger.csproj">
+      <Private>false</Private>
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </ProjectReference>
+    <ProjectReference Include="..\Savanna.Plugins.Zebra\Savanna.Plugins.Zebra.csproj">
+      <Private>false</Private>
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </ProjectReference>
   </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="..\Savanna.Services\config.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>config.json</Link>
+    </Content>
+  </ItemGroup>
+
+  <!-- Create Plugins directory and copy plugin DLLs -->
+  <Target Name="CreatePluginsDirectory" AfterTargets="Build">
+    <PropertyGroup>
+      <PluginsDir>$(OutDir)Plugins</PluginsDir>
+    </PropertyGroup>
+    
+    <!-- Create Plugins directory -->
+    <MakeDir Directories="$(PluginsDir)" Condition="!Exists('$(PluginsDir)')" />
+    
+    <!-- Copy Common and base Plugins DLLs -->
+    <Copy SourceFiles="..\Savanna.Common\bin\$(Configuration)\$(TargetFramework)\Savanna.Common.dll"
+          DestinationFolder="$(PluginsDir)" />
+    <Copy SourceFiles="..\Savanna.Plugins\bin\$(Configuration)\$(TargetFramework)\Savanna.Plugins.dll"
+          DestinationFolder="$(PluginsDir)" />
+          
+    <!-- Copy Tiger plugin -->
+    <Copy SourceFiles="..\Savanna.Plugins.Tiger\bin\$(Configuration)\$(TargetFramework)\Savanna.Plugins.Tiger.dll"
+          DestinationFolder="$(PluginsDir)" />
+          
+    <!-- Copy Zebra plugin -->
+    <Copy SourceFiles="..\Savanna.Plugins.Zebra\bin\$(Configuration)\$(TargetFramework)\Savanna.Plugins.Zebra.dll"
+          DestinationFolder="$(PluginsDir)" />
+          
+    <Message Text="Copied all plugin DLLs and dependencies to: $(PluginsDir)" Importance="high" />
+  </Target>
 
 </Project>

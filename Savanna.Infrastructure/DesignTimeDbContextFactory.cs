@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.Json;
+using Savanna.Infrastructure.Constants;
 using Savanna.Infrastructure.Data;
 using System.IO;
 
@@ -12,8 +13,8 @@ namespace Savanna.Infrastructure
         public ApplicationDbContext CreateDbContext(string[] args)
         {
             IConfigurationRoot configuration = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.json")
+                .SetBasePath(Path.Combine(Directory.GetCurrentDirectory(), ProjectPaths.WebProjectName))
+                .AddJsonFile(ProjectPaths.AppSettingsPath)
                 .Build();
 
             var optionsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>();
