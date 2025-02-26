@@ -1,174 +1,143 @@
 // UI Management
 class UIManager {
     constructor() {
-        this.animalIcons = {
-            'Lion': '🦁',
-            'Antelope': '🦌',
-            'Tiger': '🐯',
-            'Zebra': '🦓'
-        };
-
-        this.animalText = {
-            'Lion': 'L',
-            'Antelope': 'A',
-            'Tiger': 'T',
-            'Zebra': 'Z'
-        };
-
-        this.animalColors = {
-            'Lion': 'danger',
-            'Antelope': 'success',
-            'Tiger': 'warning',
-            'Zebra': 'secondary'
-        };
-
-        this.messageTimeout = null;
-        this.setupEventListeners();
-    }
-
-    setupEventListeners() {
-        const displayModeToggle = document.getElementById('displayModeToggle');
-        if (displayModeToggle) {
-            displayModeToggle.addEventListener('change', () => {
-                gameState.displayMode = displayModeToggle.checked 
-                    ? GameConstants.Game.Display.ICONS 
-                    : GameConstants.Game.Display.TEXT;
-                localStorage.setItem(
-                    GameConstants.LocalStorage.Keys.DISPLAY_MODE, 
-                    gameState.displayMode
-                );
-                this.updateGameGrid();
-            });
-        }
-    }
-
-    showMessage(message, isError = false) {
-        const messageElement = document.getElementById('gameMessage');
-        if (!messageElement) return;
-
-        messageElement.textContent = message;
-        messageElement.className = `alert ${isError ? 'alert-danger' : 'alert-info'} mt-3`;
-        messageElement.style.display = 'block';
-
-        if (this.messageTimeout) {
-            clearTimeout(this.messageTimeout);
-        }
-
-        this.messageTimeout = setTimeout(() => {
-            messageElement.style.display = 'none';
-        }, GameConstants.Game.Intervals.MESSAGE_DISPLAY);
+        this.animalIcons = GameConstants.Icons;
+        this.animalText = GameConstants.TextSymbols;
+        this.animalColors = GameConstants.Colors;
     }
 
     showErrorMessage(message) {
-        this.showMessage(message, true);
+        const errorDiv = document.createElement('div');
+        errorDiv.className = GameConstants.CSS.ALERT_ERROR;
+        errorDiv.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        `;
+        
+        const container = document.querySelector('.card-body') || document.body;
+        container.insertAdjacentElement('afterbegin', errorDiv);
+
+        setTimeout(() => {
+            errorDiv.remove();
+        }, GameConstants.GameDefaults.ALERT_TIMEOUT);
     }
 
     showSuccessMessage(message) {
-        this.showMessage(message, false);
+        const successDiv = document.createElement('div');
+        successDiv.className = GameConstants.CSS.ALERT_SUCCESS;
+        successDiv.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        `;
+        
+        const container = document.querySelector('.card-body') || document.body;
+        container.insertAdjacentElement('afterbegin', successDiv);
+
+        setTimeout(() => {
+            successDiv.remove();
+        }, GameConstants.GameDefaults.ALERT_TIMEOUT);
     }
 
     updateUI(gameState) {
-        this.updateGameGrid(gameState);
-        this.updateStatistics(gameState);
-        this.updateControls(gameState);
+        // Update iteration counter
+        document.getElementById(GameConstants.ElementIds.ITERATION_COUNTER).textContent = gameState.iteration;
+
+        // Update all animal counts
+        Object.keys(gameState.animalCounts).forEach(type => {
+            const countElement = document.getElementById(`${type.toLowerCase()}Count`);
+            if (countElement) {
+                countElement.textContent = gameState.animalCounts[type] || 0;
+            }
+        });
+
+        // Update game grid
+        this.updateGameGrid(gameState.animals);
     }
 
-    updateGameGrid(gameState) {
-        const grid = document.getElementById('gameGrid');
-        if (!grid) return;
+    updateGameGrid(animals) {
+        const cells = document.querySelectorAll(`.${GameConstants.CSS.GAME_CELL}`);
+        if (!cells.length) return;
 
-        grid.innerHTML = '';
-        grid.style.gridTemplateColumns = `repeat(${GameConstants.Game.Grid.WIDTH}, 1fr)`;
+        cells.forEach(cell => {
+            cell.textContent = '';
+            cell.className = GameConstants.CSS.GAME_CELL;
+            cell.dataset.animalType = '';
+        });
 
-        for (let i = 0; i < GameConstants.Game.Grid.TOTAL_CELLS; i++) {
-            const cell = document.createElement('div');
-            cell.className = GameConstants.CSS.Classes.GAME_CELL;
-            grid.appendChild(cell);
-        }
-
-        if (!gameState?.animals) return;
-
-        gameState.animals.forEach(animal => {
-            if (!animal.isAlive) return;
-
-            const cell = grid.children[animal.position];
+        animals.forEach(animal => {
+            const index = animal.y * GameConstants.GameDefaults.GRID_SIZE + animal.x;
+            const cell = cells[index];
             if (cell) {
-                const type = animal.animalType.toUpperCase();
-                cell.className = `${GameConstants.CSS.Classes.GAME_CELL} ${GameConstants.CSS.Classes[type]}`;
-                cell.textContent = this.getAnimalDisplay(animal.animalType);
+                cell.dataset.animalType = animal.type;
+                cell.className = `${GameConstants.CSS.GAME_CELL} ${animal.type.toLowerCase()}`;
+                cell.textContent = gameState.displayMode === GameConstants.GameDefaults.DEFAULT_DISPLAY_MODE 
+                    ? this.animalIcons[animal.type] 
+                    : this.animalText[animal.type];
             }
         });
     }
 
-    getAnimalDisplay(type) {
-        const upperType = type.toUpperCase();
-        return gameState.displayMode === GameConstants.Game.Display.ICONS
-            ? GameConstants.Animals.Icons[upperType]
-            : GameConstants.Animals.Text[upperType];
-    }
+    resetUI() {
+        const startButton = document.getElementById(GameConstants.ElementIds.START_GAME);
+        const quitButton = document.getElementById(GameConstants.ElementIds.QUIT_GAME);
+        const saveButton = document.getElementById(GameConstants.ElementIds.SAVE_GAME);
+        const pauseButton = document.getElementById(GameConstants.ElementIds.PAUSE_GAME);
 
-    updateStatistics(gameState) {
-        if (!gameState) return;
+        if (startButton) startButton.disabled = false;
+        if (quitButton) quitButton.disabled = true;
+        if (saveButton) saveButton.disabled = true;
+        if (pauseButton) pauseButton.disabled = true;
 
-        const stats = {
-            [GameConstants.Animals.Types.LION]: 0,
-            [GameConstants.Animals.Types.ANTELOPE]: 0,
-            [GameConstants.Animals.Types.TIGER]: 0,
-            [GameConstants.Animals.Types.ZEBRA]: 0
-        };
-
-        gameState.animals.forEach(animal => {
-            if (animal.isAlive) {
-                stats[animal.animalType]++;
-            }
+        // Disable all animal buttons
+        document.querySelectorAll(GameConstants.CSS.BUTTON_ADD_PREFIX).forEach(button => {
+            button.disabled = true;
         });
 
-        Object.entries(stats).forEach(([type, count]) => {
-            const element = document.getElementById(`${type.toLowerCase()}Count`);
-            if (element) {
-                element.textContent = count;
-            }
+        this.updatePauseButtonText();
+
+        // Clear the game grid
+        const cells = document.querySelectorAll(`.${GameConstants.CSS.GAME_CELL}`);
+        cells.forEach(cell => {
+            cell.textContent = '';
+            cell.className = GameConstants.CSS.GAME_CELL;
+            cell.dataset.animalType = '';
         });
 
-        const iterationElement = document.getElementById('iteration');
-        if (iterationElement) {
-            iterationElement.textContent = gameState.currentIteration;
-        }
-    }
+        // Reset all animal counters
+        Object.keys(this.animalIcons).forEach(type => {
+            const countElement = document.getElementById(`${type.toLowerCase()}Count`);
+            if (countElement) countElement.textContent = '0';
+        });
 
-    updateControls(gameState) {
-        const startButton = document.getElementById('startGame');
-        const quitButton = document.getElementById('quitGame');
-        const pauseButton = document.getElementById('togglePause');
-        const saveButton = document.getElementById('saveGame');
-        const animalControls = document.getElementById('animalControls');
-
-        if (startButton) startButton.style.display = gameState.gameActive ? 'none' : 'block';
-        if (quitButton) quitButton.style.display = gameState.gameActive ? 'block' : 'none';
-        if (pauseButton) {
-            pauseButton.style.display = gameState.gameActive ? 'block' : 'none';
-            this.updatePauseButtonText();
-        }
-        if (saveButton) saveButton.style.display = gameState.gameActive ? 'block' : 'none';
-        if (animalControls) animalControls.style.display = gameState.gameActive ? 'block' : 'none';
+        document.getElementById(GameConstants.ElementIds.ITERATION_COUNTER).textContent = '0';
     }
 
     updatePauseButtonText() {
-        const pauseButton = document.getElementById('togglePause');
+        const pauseButton = document.getElementById(GameConstants.ElementIds.PAUSE_GAME);
         if (pauseButton) {
-            pauseButton.textContent = gameState.isPaused ? '▶ Resume' : '⏸ Pause';
+            pauseButton.textContent = gameState.isPaused 
+                ? GameConstants.Messages.Buttons.RESUME_GAME 
+                : GameConstants.Messages.Buttons.PAUSE_GAME;
         }
     }
 
     enableGameControls() {
-        const buttons = document.querySelectorAll('#animalControls button');
-        buttons.forEach(button => button.disabled = false);
-    }
+        const startButton = document.getElementById(GameConstants.ElementIds.START_GAME);
+        const quitButton = document.getElementById(GameConstants.ElementIds.QUIT_GAME);
+        const saveButton = document.getElementById(GameConstants.ElementIds.SAVE_GAME);
+        const pauseButton = document.getElementById(GameConstants.ElementIds.PAUSE_GAME);
 
-    resetUI() {
-        this.updateGameGrid({ animals: [] });
-        this.updateStatistics({ animals: [] });
-        this.updateControls({ gameActive: false });
+        if (startButton) startButton.disabled = true;
+        if (quitButton) quitButton.disabled = false;
+        if (saveButton) saveButton.disabled = false;
+        if (pauseButton) pauseButton.disabled = false;
+
+        // Enable all animal buttons
+        document.querySelectorAll(GameConstants.CSS.BUTTON_ADD_PREFIX).forEach(button => {
+            button.disabled = false;
+        });
+
+        this.updatePauseButtonText();
     }
 }
 

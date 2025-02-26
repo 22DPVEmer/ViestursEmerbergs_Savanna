@@ -4,46 +4,52 @@ class GameState {
         this.gameActive = false;
         this.hasUnsavedChanges = false;
         this.isPaused = false;
-        this.displayMode = localStorage.getItem(GameConstants.LocalStorage.Keys.DISPLAY_MODE) || GameConstants.Game.Display.ICONS;
+        this.displayMode = localStorage.getItem(GameConstants.Storage.Keys.DISPLAY_MODE) || GameConstants.Storage.DefaultValues.DISPLAY_MODE;
         this.gameUpdateInterval = null;
         this.POLL_INTERVAL = GameConstants.Game.Intervals.STATE_POLLING;
         this.errorCount = 0;
     }
 
-    async startGameStatePolling() {
+    async updateGameState() {
+        try {
+            const response = await fetch(GameConstants.Api.Endpoints.UPDATE, { 
+                method: GameConstants.Api.Methods.POST 
+            });
+            
+            if (!response.ok) {
+                if (response.status === GameConstants.Api.StatusCodes.UNAUTHORIZED) {
+                    window.location.href = GameConstants.Api.Endpoints.LOGIN;
+                    return;
+                }
+                if (response.status === GameConstants.Api.StatusCodes.NOT_FOUND) {
+                    this.stopGameStatePolling();
+                    return;
+                }
+                throw new Error(GameConstants.UI.Messages.Error.FAILED_TO_GET_STATE);
+            }
+
+            const gameState = await response.json();
+            uiManager.updateUI(gameState);
+            this.errorCount = 0;
+        } catch (error) {
+            console.error(GameConstants.UI.Messages.Console.ERROR_UPDATE(error));
+            this.handleUpdateError();
+        }
+    }
+
+    handleUpdateError() {
+        this.errorCount++;
+        if (this.errorCount > GameConstants.Game.Limits.MAX_ERROR_COUNT) {
+            this.stopGameStatePolling();
+            uiManager.showErrorMessage(GameConstants.UI.Messages.Error.CONNECTION_LOST);
+        }
+    }
+
+    startGameStatePolling() {
         if (this.gameUpdateInterval) {
             clearInterval(this.gameUpdateInterval);
         }
-
-        this.gameUpdateInterval = setInterval(async () => {
-            try {
-                const response = await fetch(GameConstants.Api.Endpoints.UPDATE, { 
-                    method: GameConstants.Api.Methods.POST 
-                });
-
-                if (!response.ok) {
-                    if (response.status === GameConstants.Api.StatusCodes.UNAUTHORIZED) {
-                        this.stopGameStatePolling();
-                        return;
-                    }
-                    throw new Error(GameConstants.Messages.Error.CONNECTION_LOST);
-                }
-
-                const state = await response.json();
-                if (!state) {
-                    throw new Error(GameConstants.Messages.Error.NO_ACTIVE_GAME);
-                }
-
-                uiManager.updateUI(state);
-                this.errorCount = 0;
-            } catch (error) {
-                this.errorCount++;
-                if (this.errorCount >= 3) {
-                    this.stopGameStatePolling();
-                    uiManager.showErrorMessage(GameConstants.Messages.Error.CONNECTION_LOST);
-                }
-            }
-        }, this.POLL_INTERVAL);
+        this.gameUpdateInterval = setInterval(() => this.updateGameState(), this.POLL_INTERVAL);
     }
 
     stopGameStatePolling() {

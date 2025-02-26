@@ -1,6 +1,6 @@
 @page
-@using Microsoft.AspNetCore.Authorization
-@attribute [Authorize]
+@using Savanna.Web.Pages
+@model DashboardModel
 @{
     ViewData["Title"] = "Savanna Game";
 }
@@ -12,7 +12,9 @@
         {
             <div class="d-flex justify-content-between align-items-center">
                 <span>Welcome, @User.Identity.Name!</span>
-
+                <form method="post" asp-page="/Account/Logout">
+                    <button type="submit" class="btn btn-outline-secondary btn-sm">Logout</button>
+                </form>
             </div>
         }
         else
@@ -154,6 +156,7 @@
 }
 
 @section Scripts {
+    <script src="~/js/game/constants.js"></script>
     <script src="~/js/game/uiManager.js"></script>
     <script src="~/js/game/gameState.js"></script>
     <script src="~/js/game/gameControls.js"></script>
