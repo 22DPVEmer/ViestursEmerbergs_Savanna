@@ -2,7 +2,7 @@
 class SaveManager {
     async loadSavedGames() {
         try {
-            const response = await fetch('/api/games/saved');
+            const response = await fetch(GameConstants.Api.Endpoints.SAVED);
             if (!response.ok) throw new Error('Failed to load saved games');
             
             const savedGames = await response.json();
