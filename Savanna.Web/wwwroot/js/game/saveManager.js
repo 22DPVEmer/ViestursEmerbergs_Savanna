@@ -2,75 +2,72 @@
 class SaveManager {
     async loadSavedGames() {
         try {
-            console.log(GameConstants.UI.Messages.Console.LOADING_SAVES);
-            const response = await fetch(GameConstants.Api.Endpoints.SAVED);
-            console.log(GameConstants.UI.Messages.Console.RESPONSE_STATUS(response.status));
-            
-            if (!response.ok) {
-                if (response.status === GameConstants.Api.StatusCodes.UNAUTHORIZED) {
-                    console.log(GameConstants.UI.Messages.Console.NOT_AUTHENTICATED);
-                    return;
-                }
-                throw new Error(GameConstants.UI.Messages.Error.FAILED_TO_LOAD_SAVES);
-            }
+            const response = await fetch('/api/games/saved');
+            if (!response.ok) throw new Error('Failed to load saved games');
             
             const savedGames = await response.json();
-            console.log(GameConstants.UI.Messages.Console.LOADED_SAVES(savedGames));
+            const container = document.getElementById('savedGames');
             
-            const container = document.getElementById(GameConstants.UI.Elements.IDs.SAVED_GAMES);
-            if (!container) {
-                console.error(GameConstants.UI.Messages.Console.CONTAINER_NOT_FOUND);
-                return;
-            }
-            
-            container.innerHTML = ''; // Clear existing games
-            
-            if (savedGames.length === 0) {
-                container.innerHTML = `
-                    <div class="${GameConstants.UI.Elements.Classes.NO_SAVES_MESSAGE}">
-                        ${GameConstants.UI.Messages.Labels.NO_SAVES}
-                    </div>
-                `;
-                return;
-            }
-            
-            savedGames.forEach(game => {
-                console.log(GameConstants.UI.Messages.Console.PROCESSING_GAME(game));
-                const lionCount = game.animalCounts.lion || 0;
-                const antelopeCount = game.animalCounts.antelope || 0;
-                const tigerCount = game.animalCounts.tiger || 0;
-                const zebraCount = game.animalCounts.zebra || 0;
+            if (container) {
+                container.innerHTML = ''; // Clear existing saves
                 
-                const gameItem = document.createElement('div');
-                gameItem.className = GameConstants.UI.Elements.Classes.SAVED_GAME_ITEM;
-                gameItem.innerHTML = `
-                    <div class="d-flex w-100 justify-content-between align-items-center">
-                        <div>
-                            <h6 class="${GameConstants.UI.Elements.Classes.SAVED_GAME_HEADER}">${game.name}</h6>
-                            <small class="text-muted">${GameConstants.UI.Messages.Labels.SAVED_DATE(game.saveDate)}</small>
-                        </div>
-                        <div class="${GameConstants.UI.Elements.Classes.SAVED_GAME_CONTROLS}">
-                            <button class="btn btn-outline-primary" onclick="saveManager.loadGame(${game.id}, ${game.iteration})">
-                                ${GameConstants.UI.Elements.Icons.PLAY} ${GameConstants.UI.Messages.Labels.LOAD}
-                            </button>
-                            <button class="btn btn-outline-danger" onclick="saveManager.deleteSave(${game.id})">
-                                ${GameConstants.UI.Elements.Icons.TRASH}
-                            </button>
-                        </div>
-                    </div>
-                    <div class="${GameConstants.UI.Elements.Classes.SAVED_GAME_STATS}">
-                        <small class="me-2">${GameConstants.UI.Messages.Labels.ITERATION(game.iteration)}</small>
-                        <small class="me-2">${GameConstants.UI.Messages.Labels.LIONS(lionCount)}</small>
-                        <small class="me-2">${GameConstants.UI.Messages.Labels.ANTELOPES(antelopeCount)}</small>
-                        <small class="me-2">${GameConstants.UI.Messages.Labels.TIGERS(tigerCount)}</small>
-                        <small>${GameConstants.UI.Messages.Labels.ZEBRAS(zebraCount)}</small>
-                    </div>
-                `;
-                container.appendChild(gameItem);
-            });
+                savedGames.forEach(game => {
+                    const gameItem = document.createElement('div');
+                    gameItem.className = 'saved-game-item';
+                    
+                    // Create header with title and date
+                    const header = document.createElement('div');
+                    header.className = 'saved-game-header';
+                    
+                    const title = document.createElement('h6');
+                    title.className = 'saved-game-title';
+                    title.textContent = `Game ${game.name}`;
+                    
+                    const date = document.createElement('small');
+                    date.className = 'saved-game-date';
+                    date.textContent = new Date(game.saveDate).toLocaleString();
+                    
+                    header.appendChild(title);
+                    header.appendChild(date);
+                    
+                    // Create stats section
+                    const stats = document.createElement('div');
+                    stats.className = 'saved-game-stats';
+                    stats.innerHTML = `
+                        <span>Iteration: ${game.iteration}</span>
+                        <span>•</span>
+                        <span>Lions: ${game.animalCounts.lion || 0}</span>
+                        <span>•</span>
+                        <span>Antelopes: ${game.animalCounts.antelope || 0}</span>
+                        <span>•</span>
+                        <span>Tigers: ${game.animalCounts.tiger || 0}</span>
+                        <span>•</span>
+                        <span>Zebras: ${game.animalCounts.zebra || 0}</span>
+                    `;
+                    
+                    // Create controls section
+                    const controls = document.createElement('div');
+                    controls.className = 'saved-game-controls';
+                    controls.innerHTML = `
+                        <button class="btn btn-outline-primary" onclick="saveManager.loadGame(${game.id}, ${game.iteration})">
+                            <i class="bi bi-play-fill"></i> Load
+                        </button>
+                        <button class="btn btn-outline-danger" onclick="saveManager.deleteSave(${game.id})">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    `;
+                    
+                    // Assemble all sections
+                    gameItem.appendChild(header);
+                    gameItem.appendChild(stats);
+                    gameItem.appendChild(controls);
+                    
+                    container.appendChild(gameItem);
+                });
+            }
         } catch (error) {
             console.error('Error loading saved games:', error);
-            uiManager.showErrorMessage(GameConstants.UI.Messages.Error.FAILED_TO_LOAD_SAVES);
+            uiManager.showErrorMessage('Failed to load saved games');
         }
     }
 

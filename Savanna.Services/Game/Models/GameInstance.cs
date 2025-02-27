@@ -101,19 +101,74 @@ public class GameInstance
     {
         if (!IsPaused)
         {
+            // Store animals that can reproduce before update
+            var reproduceReadyAnimals = _gameField.Animals
+                .Where(a => a.IsAlive && a is IReproducible reproducible && reproducible.CanReproduce)
+                .ToList();
+
+            var previousAnimals = _gameField.Animals.ToList();
             _gameField.Update();
             Iteration++;
+            
+            // Get new animals that appeared after the update
+            var newAnimals = _gameField.Animals
+                .Where(a => !previousAnimals.Contains(a))
+                .ToList();
             
             // Update age for all living animals
             foreach (var animal in _gameField.Animals.Where(a => a.IsAlive))
             {
-                if (_animalStates.TryGetValue(animal, out var state))
+                if (!_animalStates.TryGetValue(animal, out var state))
                 {
-                    state.Age++;
+                    state = new AnimalState(animal)
+                    {
+                        Age = 0,
+                        CreationIteration = Iteration,
+                        OffspringCount = 0
+                    };
+                    _animalStates[animal] = state;
+                }
+                else
+                {
+                    state.Age = Iteration - state.CreationIteration;
+                }
+            }
+
+            // If new animals were created, update offspring count for animals that were ready to reproduce
+            if (newAnimals.Any())
+            {
+                foreach (var newAnimal in newAnimals)
+                {
+                    // Initialize state for new animal with age 0
+                    if (!_animalStates.TryGetValue(newAnimal, out _))
+                    {
+                        _animalStates[newAnimal] = new AnimalState(newAnimal)
+                        {
+                            Age = 0,
+                            CreationIteration = Iteration,
+                            OffspringCount = 0
+                        };
+                    }
+
+                    // Find actual parents - animals of same type that were ready to reproduce
+                    var actualParents = reproduceReadyAnimals
+                        .Where(a => a.GetType() == newAnimal.GetType() && 
+                               (a as IReproducible)?.ConsecutiveRoundsNearMate > 0)
+                        .ToList();
+
+                    // Update offspring count for actual parents
+                    foreach (var parent in actualParents)
+                    {
+                        if (_animalStates.TryGetValue(parent, out var parentState))
+                        {
+                            parentState.OffspringCount++;
+                        }
+                    }
                 }
             }
         }
     }
+
 
     public Dictionary<string, int> GetAnimalCounts()
     {
@@ -169,6 +224,19 @@ public class GameInstance
 
             _logger.LogInformation("Adding animal of type {Type} at position ({X}, {Y})", type, position.X, position.Y);
             _gameField.AddAnimal(type, position);
+            
+            // Initialize animal state for the newly added animal
+            var newAnimal = _gameField.GetEntitiesAt(position).LastOrDefault();
+            if (newAnimal != null)
+            {
+                _animalStates[newAnimal] = new AnimalState(newAnimal)
+                {
+                    Age = 0,
+                    CreationIteration = Iteration,
+                    OffspringCount = 0
+                };
+            }
+            
             _logger.LogInformation("Successfully added animal of type {Type} at ({X}, {Y})", type, position.X, position.Y);
         }
         catch (Exception ex)
@@ -229,6 +297,18 @@ public class GameInstance
             
             _gameField.AddAnimal(animalSymbol, position);
             
+            // Initialize animal state for the newly added animal
+            var addedAnimal = _gameField.GetEntitiesAt(position).LastOrDefault();
+            if (addedAnimal != null)
+            {
+                _animalStates[addedAnimal] = new AnimalState(addedAnimal)
+                {
+                    Age = 0,
+                    CreationIteration = Iteration,
+                    OffspringCount = 0
+                };
+            }
+            
             _logger.LogInformation("Animal {Type} added successfully at ({X}, {Y})", type, position.X, position.Y);
         }
         catch (Exception ex)
@@ -270,15 +350,21 @@ public class GameInstance
     {
         var animals = GetAnimals()
             .Where(a => a.IsAlive)
-            .Select(a => new AnimalDto
+            .Select(a =>
             {
-                Id = GetEntityId(a),
-                Type = a.GetType().Name,
-                X = a.Position.X,
-                Y = a.Position.Y,
-                Health = (int)a.Health,
-                IsAlive = a.IsAlive,
-                IsSelected = IsAnimalSelected(GetEntityId(a))
+                var state = _animalStates.GetValueOrDefault(a);
+                return new AnimalDto
+                {
+                    Id = GetEntityId(a),
+                    Type = a.GetType().Name,
+                    X = a.Position.X,
+                    Y = a.Position.Y,
+                    Health = (int)a.Health,
+                    IsAlive = a.IsAlive,
+                    IsSelected = IsAnimalSelected(GetEntityId(a)),
+                    Age = state?.Age ?? 1,
+                    OffspringCount = state?.OffspringCount ?? 0
+                };
             }).ToList();
 
         return new GameStateDto

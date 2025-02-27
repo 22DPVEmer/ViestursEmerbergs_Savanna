@@ -5,6 +5,9 @@
     ViewData["Title"] = "Savanna Game";
 }
 
+<link rel="stylesheet" href="~/css/savanna-theme.css" />
+<link rel="stylesheet" href="~/css/game-styles.css" />
+
 <div class="container-fluid py-4">
     <!-- User Authentication Status -->
     <div class="mb-4">
@@ -12,9 +15,6 @@
         {
             <div class="d-flex justify-content-between align-items-center">
                 <span>Welcome, @User.Identity.Name!</span>
-                <form method="post" asp-page="/Account/Logout">
-                    <button type="submit" class="btn btn-outline-secondary btn-sm">Logout</button>
-                </form>
             </div>
         }
         else
@@ -85,6 +85,31 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Add this right after the Game Grid card -->
+            <div class="card mt-4" id="animalDetails">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Selected Animal Details</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="stat-item">
+                        <span class="stat-label">Species</span>
+                        <span id="animalType" class="stat-value species">-</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Age</span>
+                        <span id="animalAge" class="stat-value">-</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Health</span>
+                        <span id="animalHealth" class="stat-value health">-</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Offspring</span>
+                        <span id="animalOffspring" class="stat-value">-</span>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Game Info Column -->
@@ -118,42 +143,6 @@
         </div>
     </div>
 </div>
-
-@section Styles {
-    <style>
-        .game-grid {
-            aspect-ratio: 1;
-            background-color: #f8f9fa;
-            border: 1px solid #dee2e6;
-            display: grid;
-            gap: 1px;
-            padding: 1px;
-        }
-
-        .game-cell {
-            background-color: white;
-            border: 1px solid #e9ecef;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.25rem;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .game-cell.lion { color: #dc3545; }
-        .game-cell.antelope { color: #198754; }
-        .game-cell.tiger { color: #fd7e14; }
-        .game-cell.zebra { color: #6c757d; }
-
-        @@media (min-width: 768px) {
-            .game-grid {
-                max-width: 800px;
-                margin: 0 auto;
-            }
-        }
-    </style>
-}
 
 @section Scripts {
     <script src="~/js/game/constants.js"></script>

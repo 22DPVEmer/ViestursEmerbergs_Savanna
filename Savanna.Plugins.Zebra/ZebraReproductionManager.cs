@@ -15,6 +15,7 @@ namespace Savanna.Plugins.Zebra
         private readonly ZebraConfiguration _configuration;
         private IHealthManageable _healthManager;
         private int _consecutiveRoundsNearMate;
+        private readonly IGameEntity _parent;
 
         public int ConsecutiveRoundsNearMate => _consecutiveRoundsNearMate;
         public bool CanReproduce => 
@@ -27,6 +28,7 @@ namespace Savanna.Plugins.Zebra
             _configuration = (ZebraConfiguration)configuration;
             _healthManager = healthManager;
             _consecutiveRoundsNearMate = 0;
+            _parent = (IGameEntity)healthManager;
         }
 
         public void UpdateHealthManager(IHealthManageable healthManager)
@@ -43,7 +45,7 @@ namespace Savanna.Plugins.Zebra
             }
 
             bool isNearMate = field.GetEntitiesInRange(_parentPosition, _configuration.GetMatingDistance())
-                .Where(z => z.Symbol == _configuration.Symbol && z.IsAlive)
+                .Where(z => z.Symbol == _configuration.Symbol && z.IsAlive && z != _parent)
                 .Any();
 
             if (isNearMate)

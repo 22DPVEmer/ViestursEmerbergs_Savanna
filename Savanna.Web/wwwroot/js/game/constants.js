@@ -302,5 +302,14 @@ const GameConstants = {
         GAME_STATE: '/api/games/state',
         UPDATE_GAME: '/api/games/update',
         LOGIN: '/Account/Login'
+    },
+
+    Health: {
+        MaxHealth: {
+            LION: 20,
+            ANTELOPE: 20,
+            TIGER: 20,
+            ZEBRA: 20
+        }
     }
 }; 
