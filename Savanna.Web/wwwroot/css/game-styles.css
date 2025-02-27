@@ -1,57 +1,101 @@
 .game-grid {
     aspect-ratio: 1;
-    background-color: #f8f9fa;
-    border: 1px solid #dee2e6;
     display: grid;
-    gap: 1px;
-    padding: 1px;
+    gap: 0;
+    padding: 0;
+    background-image: url('/images/savanna-background.png');
+    background-size: cover;
+    background-position: left center;
+    background-repeat: no-repeat;
+    border: none;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    position: relative;
 }
 
 .game-cell {
-    background-color: white;
-    border: 1px solid #e9ecef;
+    background-color: transparent !important;
+    border: none;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    font-size: 1.25rem;
+    font-size: 1.5rem;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.3s ease;
     position: relative;
-    padding: 2px;
+    padding: 4px;
+    z-index: 1;
+}
+
+.game-cell:hover {
+    background-color: rgba(0, 0, 0, 0.1) !important;
+    transform: scale(1.05);
 }
 
 .game-cell.selected {
-    background-color: rgba(13, 110, 253, 0.1);
+    background-color: rgba(0, 0, 0, 0.15) !important;
+    transform: scale(1.05);
+}
+
+.game-cell > div {
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.9);
+    font-size: 1.8rem;
+    font-weight: bold;
 }
 
 .game-cell .health-bar {
     position: absolute;
-    bottom: 2px;
-    left: 2px;
-    right: 2px;
-    height: 3px;
-    background-color: #e9ecef;
-    border-radius: 1.5px;
+    bottom: 4px;
+    left: 15%;
+    right: 15%;
+    height: 4px;
+    background-color: rgba(0, 0, 0, 0.4);
+    border-radius: 2px;
     overflow: hidden;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .game-cell .health-bar-fill {
     height: 100%;
     width: 100%;
-    background-color: #198754;
     transition: width 0.3s ease;
 }
 
-.game-cell.lion .health-bar-fill { background-color: #dc3545; }
-.game-cell.antelope .health-bar-fill { background-color: #198754; }
-.game-cell.tiger .health-bar-fill { background-color: #fd7e14; }
-.game-cell.zebra .health-bar-fill { background-color: #6c757d; }
+.game-cell.lion .health-bar-fill { 
+    background-color: rgba(220, 53, 69, 0.9);
+    box-shadow: 0 0 4px rgba(220, 53, 69, 0.5);
+}
+.game-cell.antelope .health-bar-fill { 
+    background-color: rgba(25, 135, 84, 0.9);
+    box-shadow: 0 0 4px rgba(25, 135, 84, 0.5);
+}
+.game-cell.tiger .health-bar-fill { 
+    background-color: rgba(253, 126, 20, 0.9);
+    box-shadow: 0 0 4px rgba(253, 126, 20, 0.5);
+}
+.game-cell.zebra .health-bar-fill { 
+    background-color: rgba(108, 117, 125, 0.9);
+    box-shadow: 0 0 4px rgba(108, 117, 125, 0.5);
+}
 
-.game-cell.lion { color: #dc3545; }
-.game-cell.antelope { color: #198754; }
-.game-cell.tiger { color: #fd7e14; }
-.game-cell.zebra { color: #6c757d; }
+.game-cell.lion { 
+    color: #ff4757;
+    text-shadow: 0 0 4px rgba(255, 71, 87, 0.5);
+}
+.game-cell.antelope { 
+    color: #2ed573;
+    text-shadow: 0 0 4px rgba(46, 213, 115, 0.5);
+}
+.game-cell.tiger { 
+    color: #ffa502;
+    text-shadow: 0 0 4px rgba(255, 165, 2, 0.5);
+}
+.game-cell.zebra { 
+    color: #ffffff;
+    text-shadow: 0 0 4px rgba(0, 0, 0, 0.5);
+}
 
 @media (min-width: 768px) {
     .game-grid {
@@ -67,4 +111,24 @@
 
 #animalDetails.visible {
     display: block;
+}
+
+.game-container {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    margin-bottom: 2rem;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+.game-container .card-body {
+    background: transparent !important;
+    padding: 0 !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+.game-container .card {
+    background: transparent !important;
 } 
