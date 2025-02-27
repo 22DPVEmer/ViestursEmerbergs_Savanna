@@ -14,7 +14,8 @@ const GameConstants = {
             ANIMAL_TYPES: '/api/games/animal-types',
             LOGIN: '/Account/Login',
             DELETE_SAVE: (id) => `/api/games/saved/${id}`,
-            LOAD_SAVE: (id) => `/api/games/load/${id}`
+            LOAD_SAVE: (id) => `/api/games/load/${id}`,
+            SEARCH_SAVES: (term) => `/api/games/saved/search?term=${encodeURIComponent(term)}`
         },
         Methods: {
             GET: 'GET',

@@ -116,18 +116,67 @@ class SaveManager {
 
     initializeSearch() {
         const searchInput = document.getElementById('savedGamesSearch');
-        if (searchInput) {
-            searchInput.addEventListener('input', (e) => {
-                const searchTerm = e.target.value.toLowerCase();
-                const filteredGames = this.filterGames(this.savedGames).filter(game => {
-                    const saveDate = new Date(game.saveDate).toLocaleString().toLowerCase();
-                    const stats = `Iteration: ${game.iteration} Lions: ${game.animalCounts.lion || 0} Antelopes: ${game.animalCounts.antelope || 0} Tigers: ${game.animalCounts.tiger || 0} Zebras: ${game.animalCounts.zebra || 0}`.toLowerCase();
+        const searchContainer = searchInput?.parentElement;
+        
+        if (searchInput && searchContainer) {
+            // Remove any existing search buttons first
+            const existingButtons = searchContainer.querySelectorAll('button');
+            existingButtons.forEach(button => button.remove());
+
+            // Create search button
+            const searchButton = document.createElement('button');
+            searchButton.className = 'btn btn-outline-primary input-group-text';
+            searchButton.innerHTML = '<i class="bi bi-search"></i>';
+            searchContainer.appendChild(searchButton);
+
+            // Function to perform search
+            const performSearch = async () => {
+                const searchTerm = searchInput.value.toLowerCase();
+                try {
+                    // Update URL with search term
+                    const url = new URL(window.location);
+                    if (searchTerm) {
+                        url.searchParams.set('search', searchTerm);
+                    } else {
+                        url.searchParams.delete('search');
+                    }
+                    window.history.pushState({}, '', url);
+
+                    if (!searchTerm) {
+                        // If search is empty, just load all saved games
+                        await this.loadSavedGames();
+                        return;
+                    }
+
+                    // Make API call to search endpoint
+                    const response = await fetch(`${GameConstants.Api.Endpoints.SAVED}/search?term=${encodeURIComponent(searchTerm)}`);
+                    if (!response.ok) throw new Error('Failed to search saved games');
                     
-                    return saveDate.includes(searchTerm) || stats.includes(searchTerm);
-                });
-                
-                this.renderSavedGames(filteredGames);
+                    const searchResults = await response.json();
+                    this.renderSavedGames(searchResults);
+                } catch (error) {
+                    console.error('Error searching saved games:', error);
+                    uiManager.showErrorMessage('Failed to search saved games');
+                }
+            };
+
+            // Add click event to search button
+            searchButton.addEventListener('click', performSearch);
+
+            // Add enter key press event to search input
+            searchInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    performSearch();
+                }
             });
+
+            // Check for search term in URL on page load
+            const url = new URL(window.location);
+            const searchTerm = url.searchParams.get('search');
+            if (searchTerm) {
+                searchInput.value = searchTerm;
+                performSearch();
+            }
         }
     }
 

@@ -328,5 +328,64 @@ namespace Savanna.Web.Controllers
                 return StatusCode(500, new { message = ResponseMessages.ErrorDeletingSave });
             }
         }
+
+        [HttpGet("saved/search")]
+        public async Task<IActionResult> SearchSavedGames([FromQuery] string term)
+        {
+            try
+            {
+                var userId = GetUserId();
+                _logger.LogInformation("Searching saved games for user {UserId} with term: {Term}", userId, term);
+
+                // Get the actual user ID if authenticated
+                string actualUserId = userId;
+                if (User.Identity?.IsAuthenticated == true)
+                {
+                    var user = await _context.Users.FirstOrDefaultAsync(u => u.UserName == userId);
+                    if (user != null)
+                    {
+                        actualUserId = user.Id;
+                    }
+                }
+
+                var searchTerm = term?.ToLower() ?? "";
+
+                var games = await _context.GameSaves
+                    .Include(g => g.GameState)
+                    .ThenInclude(s => s.Animals)
+                    .Where(g => g.UserId == actualUserId)
+                    .Select(g => new
+                    {
+                        g.Id,
+                        g.Name,
+                        g.SaveDate,
+                        Iteration = g.GameState.CurrentIteration,
+                        AnimalCounts = new
+                        {
+                            Lion = g.GameState.Animals.Count(a => a.AnimalType == GameConstants.AnimalTypes.Lion && a.IsAlive),
+                            Antelope = g.GameState.Animals.Count(a => a.AnimalType == GameConstants.AnimalTypes.Antelope && a.IsAlive),
+                            Tiger = g.GameState.Animals.Count(a => a.AnimalType == GameConstants.AnimalTypes.Tiger && a.IsAlive),
+                            Zebra = g.GameState.Animals.Count(a => a.AnimalType == GameConstants.AnimalTypes.Zebra && a.IsAlive)
+                        }
+                    })
+                    .Where(g => 
+                        g.SaveDate.ToString().ToLower().Contains(searchTerm) ||
+                        g.Iteration.ToString().Contains(searchTerm) ||
+                        g.AnimalCounts.Lion.ToString().Contains(searchTerm) ||
+                        g.AnimalCounts.Antelope.ToString().Contains(searchTerm) ||
+                        g.AnimalCounts.Tiger.ToString().Contains(searchTerm) ||
+                        g.AnimalCounts.Zebra.ToString().Contains(searchTerm))
+                    .OrderByDescending(g => g.SaveDate)
+                    .ToListAsync();
+
+                _logger.LogInformation("Found {Count} games matching search term for user {UserId}", games.Count, userId);
+                return Ok(games);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error searching saved games for user {UserId}", GetUserId());
+                return StatusCode(500, new { message = "Failed to search saved games: " + ex.Message });
+            }
+        }
     }
 } 
