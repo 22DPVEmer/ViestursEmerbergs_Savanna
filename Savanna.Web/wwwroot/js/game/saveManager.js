@@ -1,73 +1,133 @@
 // Save Management
 class SaveManager {
+    constructor() {
+        this.currentFilter = 'all';
+        this.savedGames = [];
+    }
+
     async loadSavedGames() {
         try {
             const response = await fetch(GameConstants.Api.Endpoints.SAVED);
             if (!response.ok) throw new Error('Failed to load saved games');
             
-            const savedGames = await response.json();
-            const container = document.getElementById('savedGames');
-            
-            if (container) {
-                container.innerHTML = ''; // Clear existing saves
-                
-                savedGames.forEach(game => {
-                    const gameItem = document.createElement('div');
-                    gameItem.className = 'saved-game-item';
-                    
-                    // Create header with title and date
-                    const header = document.createElement('div');
-                    header.className = 'saved-game-header';
-                    
-                    const title = document.createElement('h6');
-                    title.className = 'saved-game-title';
-                    title.textContent = `Game ${game.name}`;
-                    
-                    const date = document.createElement('small');
-                    date.className = 'saved-game-date';
-                    date.textContent = new Date(game.saveDate).toLocaleString();
-                    
-                    header.appendChild(title);
-                    header.appendChild(date);
-                    
-                    // Create stats section
-                    const stats = document.createElement('div');
-                    stats.className = 'saved-game-stats';
-                    stats.innerHTML = `
-                        <span>Iteration: ${game.iteration}</span>
-                        <span>•</span>
-                        <span>Lions: ${game.animalCounts.lion || 0}</span>
-                        <span>•</span>
-                        <span>Antelopes: ${game.animalCounts.antelope || 0}</span>
-                        <span>•</span>
-                        <span>Tigers: ${game.animalCounts.tiger || 0}</span>
-                        <span>•</span>
-                        <span>Zebras: ${game.animalCounts.zebra || 0}</span>
-                    `;
-                    
-                    // Create controls section
-                    const controls = document.createElement('div');
-                    controls.className = 'saved-game-controls';
-                    controls.innerHTML = `
-                        <button class="btn btn-outline-primary" onclick="saveManager.loadGame(${game.id}, ${game.iteration})">
-                            <i class="bi bi-play-fill"></i> Load
-                        </button>
-                        <button class="btn btn-outline-danger" onclick="saveManager.deleteSave(${game.id})">
-                            <i class="bi bi-trash"></i>
-                        </button>
-                    `;
-                    
-                    // Assemble all sections
-                    gameItem.appendChild(header);
-                    gameItem.appendChild(stats);
-                    gameItem.appendChild(controls);
-                    
-                    container.appendChild(gameItem);
-                });
-            }
+            this.savedGames = await response.json();
+            this.renderSavedGames();
+            this.initializeFilters();
         } catch (error) {
             console.error('Error loading saved games:', error);
             uiManager.showErrorMessage('Failed to load saved games');
+        }
+    }
+
+    renderSavedGames(filteredGames = null) {
+        const container = document.getElementById('savedGames');
+        if (!container) return;
+
+        const gamesToRender = filteredGames || this.filterGames(this.savedGames);
+        container.innerHTML = ''; // Clear existing saves
+
+        gamesToRender.forEach(game => {
+            const gameItem = document.createElement('div');
+            gameItem.className = 'saved-game-item';
+            
+            // Format the date for the game name
+            const saveDate = new Date(game.saveDate);
+            const formattedDate = saveDate.toLocaleString();
+            const searchableDate = saveDate.toISOString();
+            
+            // Create header with date
+            const header = document.createElement('div');
+            header.className = 'saved-game-header';
+            
+            const title = document.createElement('h6');
+            title.className = 'saved-game-title';
+            title.textContent = formattedDate;
+            title.dataset.searchDate = searchableDate;
+            
+            header.appendChild(title);
+            
+            // Create stats section
+            const stats = document.createElement('div');
+            stats.className = 'saved-game-stats';
+            stats.innerHTML = `
+                <span>Iteration: ${game.iteration}</span>
+                <span>•</span>
+                <span>Lions: ${game.animalCounts.lion || 0}</span>
+                <span>•</span>
+                <span>Antelopes: ${game.animalCounts.antelope || 0}</span>
+                <span>•</span>
+                <span>Tigers: ${game.animalCounts.tiger || 0}</span>
+                <span>•</span>
+                <span>Zebras: ${game.animalCounts.zebra || 0}</span>
+            `;
+            
+            // Create controls section
+            const controls = document.createElement('div');
+            controls.className = 'saved-game-controls';
+            controls.innerHTML = `
+                <button class="btn btn-outline-primary" onclick="saveManager.loadGame(${game.id}, ${game.iteration})">
+                    <i class="bi bi-play-fill"></i> Load
+                </button>
+                <button class="btn btn-outline-danger" onclick="saveManager.deleteSave(${game.id})">
+                    <i class="bi bi-trash"></i>
+                </button>
+            `;
+            
+            // Assemble all sections
+            gameItem.appendChild(header);
+            gameItem.appendChild(stats);
+            gameItem.appendChild(controls);
+            
+            container.appendChild(gameItem);
+        });
+    }
+
+    filterGames(games) {
+        const now = new Date();
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+        const monthAgo = new Date(today.getFullYear(), today.getMonth() - 1, today.getDate());
+
+        switch (this.currentFilter) {
+            case 'today':
+                return games.filter(game => new Date(game.saveDate) >= today);
+            case 'week':
+                return games.filter(game => new Date(game.saveDate) >= weekAgo);
+            case 'month':
+                return games.filter(game => new Date(game.saveDate) >= monthAgo);
+            default:
+                return games;
+        }
+    }
+
+    initializeFilters() {
+        const filterButtons = document.querySelectorAll('#filterButtons .btn');
+        filterButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                filterButtons.forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+                this.currentFilter = button.dataset.filter;
+                this.renderSavedGames();
+            });
+        });
+
+        this.initializeSearch();
+    }
+
+    initializeSearch() {
+        const searchInput = document.getElementById('savedGamesSearch');
+        if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+                const searchTerm = e.target.value.toLowerCase();
+                const filteredGames = this.filterGames(this.savedGames).filter(game => {
+                    const saveDate = new Date(game.saveDate).toLocaleString().toLowerCase();
+                    const stats = `Iteration: ${game.iteration} Lions: ${game.animalCounts.lion || 0} Antelopes: ${game.animalCounts.antelope || 0} Tigers: ${game.animalCounts.tiger || 0} Zebras: ${game.animalCounts.zebra || 0}`.toLowerCase();
+                    
+                    return saveDate.includes(searchTerm) || stats.includes(searchTerm);
+                });
+                
+                this.renderSavedGames(filteredGames);
+            });
         }
     }
 

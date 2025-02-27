@@ -3,15 +3,14 @@
     display: grid;
     gap: 0;
     padding: 0;
-    background-image: url('/images/savanna-background.png');
-    background-size: cover;
-    background-position: left center;
-    background-repeat: no-repeat;
-    border: none;
+    background-color: rgba(161, 0, 255, 0.1) !important;
+    background-image: none;
+    border: 2px solid #A100FF;
     border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 6px 12px rgba(70, 0, 115, 0.2);
     position: relative;
+    backdrop-filter: blur(8px);
 }
 
 .game-cell {
@@ -30,19 +29,38 @@
 }
 
 .game-cell:hover {
-    background-color: rgba(0, 0, 0, 0.1) !important;
+    background-color: rgba(161, 0, 255, 0.1) !important;
     transform: scale(1.05);
+    box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
 }
 
 .game-cell.selected {
-    background-color: rgba(0, 0, 0, 0.15) !important;
+    background-color: rgba(161, 0, 255, 0.2) !important;
     transform: scale(1.05);
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.4);
 }
 
 .game-cell > div {
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.9);
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
     font-size: 1.8rem;
     font-weight: bold;
+}
+
+body {
+    background-image: url('/images/safary_02.jpg') !important;
+    background-size: cover !important;
+    background-position: center !important;
+    background-attachment: fixed !important;
+    min-height: 100vh;
+}
+
+.container-fluid {
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: 15px;
+    padding: 2rem;
+    margin: 2rem auto;
+    max-width: 1400px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 }
 
 .game-cell .health-bar {
