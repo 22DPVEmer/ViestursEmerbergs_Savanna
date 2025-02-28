@@ -1,76 +1,182 @@
 // Save Management
 class SaveManager {
+    constructor() {
+        this.currentFilter = 'all';
+        this.savedGames = [];
+    }
+
     async loadSavedGames() {
         try {
-            console.log(GameConstants.UI.Messages.Console.LOADING_SAVES);
             const response = await fetch(GameConstants.Api.Endpoints.SAVED);
-            console.log(GameConstants.UI.Messages.Console.RESPONSE_STATUS(response.status));
+            if (!response.ok) throw new Error('Failed to load saved games');
             
-            if (!response.ok) {
-                if (response.status === GameConstants.Api.StatusCodes.UNAUTHORIZED) {
-                    console.log(GameConstants.UI.Messages.Console.NOT_AUTHENTICATED);
-                    return;
-                }
-                throw new Error(GameConstants.UI.Messages.Error.FAILED_TO_LOAD_SAVES);
-            }
-            
-            const savedGames = await response.json();
-            console.log(GameConstants.UI.Messages.Console.LOADED_SAVES(savedGames));
-            
-            const container = document.getElementById(GameConstants.UI.Elements.IDs.SAVED_GAMES);
-            if (!container) {
-                console.error(GameConstants.UI.Messages.Console.CONTAINER_NOT_FOUND);
-                return;
-            }
-            
-            container.innerHTML = ''; // Clear existing games
-            
-            if (savedGames.length === 0) {
-                container.innerHTML = `
-                    <div class="${GameConstants.UI.Elements.Classes.NO_SAVES_MESSAGE}">
-                        ${GameConstants.UI.Messages.Labels.NO_SAVES}
-                    </div>
-                `;
-                return;
-            }
-            
-            savedGames.forEach(game => {
-                console.log(GameConstants.UI.Messages.Console.PROCESSING_GAME(game));
-                const lionCount = game.animalCounts.lion || 0;
-                const antelopeCount = game.animalCounts.antelope || 0;
-                const tigerCount = game.animalCounts.tiger || 0;
-                const zebraCount = game.animalCounts.zebra || 0;
-                
-                const gameItem = document.createElement('div');
-                gameItem.className = GameConstants.UI.Elements.Classes.SAVED_GAME_ITEM;
-                gameItem.innerHTML = `
-                    <div class="d-flex w-100 justify-content-between align-items-center">
-                        <div>
-                            <h6 class="${GameConstants.UI.Elements.Classes.SAVED_GAME_HEADER}">${game.name}</h6>
-                            <small class="text-muted">${GameConstants.UI.Messages.Labels.SAVED_DATE(game.saveDate)}</small>
-                        </div>
-                        <div class="${GameConstants.UI.Elements.Classes.SAVED_GAME_CONTROLS}">
-                            <button class="btn btn-outline-primary" onclick="saveManager.loadGame(${game.id}, ${game.iteration})">
-                                ${GameConstants.UI.Elements.Icons.PLAY} ${GameConstants.UI.Messages.Labels.LOAD}
-                            </button>
-                            <button class="btn btn-outline-danger" onclick="saveManager.deleteSave(${game.id})">
-                                ${GameConstants.UI.Elements.Icons.TRASH}
-                            </button>
-                        </div>
-                    </div>
-                    <div class="${GameConstants.UI.Elements.Classes.SAVED_GAME_STATS}">
-                        <small class="me-2">${GameConstants.UI.Messages.Labels.ITERATION(game.iteration)}</small>
-                        <small class="me-2">${GameConstants.UI.Messages.Labels.LIONS(lionCount)}</small>
-                        <small class="me-2">${GameConstants.UI.Messages.Labels.ANTELOPES(antelopeCount)}</small>
-                        <small class="me-2">${GameConstants.UI.Messages.Labels.TIGERS(tigerCount)}</small>
-                        <small>${GameConstants.UI.Messages.Labels.ZEBRAS(zebraCount)}</small>
-                    </div>
-                `;
-                container.appendChild(gameItem);
-            });
+            this.savedGames = await response.json();
+            this.renderSavedGames();
+            this.initializeFilters();
         } catch (error) {
             console.error('Error loading saved games:', error);
-            uiManager.showErrorMessage(GameConstants.UI.Messages.Error.FAILED_TO_LOAD_SAVES);
+            uiManager.showErrorMessage('Failed to load saved games');
+        }
+    }
+
+    renderSavedGames(filteredGames = null) {
+        const container = document.getElementById('savedGames');
+        if (!container) return;
+
+        const gamesToRender = filteredGames || this.filterGames(this.savedGames);
+        container.innerHTML = ''; // Clear existing saves
+
+        gamesToRender.forEach(game => {
+            const gameItem = document.createElement('div');
+            gameItem.className = 'saved-game-item';
+            
+            // Format the date for the game name
+            const saveDate = new Date(game.saveDate);
+            const formattedDate = saveDate.toLocaleString();
+            const searchableDate = saveDate.toISOString();
+            
+            // Create header with date
+            const header = document.createElement('div');
+            header.className = 'saved-game-header';
+            
+            const title = document.createElement('h6');
+            title.className = 'saved-game-title';
+            title.textContent = formattedDate;
+            title.dataset.searchDate = searchableDate;
+            
+            header.appendChild(title);
+            
+            // Create stats section
+            const stats = document.createElement('div');
+            stats.className = 'saved-game-stats';
+            stats.innerHTML = `
+                <span>Iteration: ${game.iteration}</span>
+                <span>•</span>
+                <span>Lions: ${game.animalCounts.lion || 0}</span>
+                <span>•</span>
+                <span>Antelopes: ${game.animalCounts.antelope || 0}</span>
+                <span>•</span>
+                <span>Tigers: ${game.animalCounts.tiger || 0}</span>
+                <span>•</span>
+                <span>Zebras: ${game.animalCounts.zebra || 0}</span>
+            `;
+            
+            // Create controls section
+            const controls = document.createElement('div');
+            controls.className = 'saved-game-controls';
+            controls.innerHTML = `
+                <button class="btn btn-outline-primary" onclick="saveManager.loadGame(${game.id}, ${game.iteration})">
+                    <i class="bi bi-play-fill"></i> Load
+                </button>
+                <button class="btn btn-outline-danger" onclick="saveManager.deleteSave(${game.id})">
+                    <i class="bi bi-trash"></i>
+                </button>
+            `;
+            
+            // Assemble all sections
+            gameItem.appendChild(header);
+            gameItem.appendChild(stats);
+            gameItem.appendChild(controls);
+            
+            container.appendChild(gameItem);
+        });
+    }
+
+    filterGames(games) {
+        const now = new Date();
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+        const monthAgo = new Date(today.getFullYear(), today.getMonth() - 1, today.getDate());
+
+        switch (this.currentFilter) {
+            case 'today':
+                return games.filter(game => new Date(game.saveDate) >= today);
+            case 'week':
+                return games.filter(game => new Date(game.saveDate) >= weekAgo);
+            case 'month':
+                return games.filter(game => new Date(game.saveDate) >= monthAgo);
+            default:
+                return games;
+        }
+    }
+
+    initializeFilters() {
+        const filterButtons = document.querySelectorAll('#filterButtons .btn');
+        filterButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                filterButtons.forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+                this.currentFilter = button.dataset.filter;
+                this.renderSavedGames();
+            });
+        });
+
+        this.initializeSearch();
+    }
+
+    initializeSearch() {
+        const searchInput = document.getElementById('savedGamesSearch');
+        const searchContainer = searchInput?.parentElement;
+        
+        if (searchInput && searchContainer) {
+            // Remove any existing search buttons first
+            const existingButtons = searchContainer.querySelectorAll('button');
+            existingButtons.forEach(button => button.remove());
+
+            // Create search button
+            const searchButton = document.createElement('button');
+            searchButton.className = 'btn btn-outline-primary input-group-text';
+            searchButton.innerHTML = '<i class="bi bi-search"></i>';
+            searchContainer.appendChild(searchButton);
+
+            // Function to perform search
+            const performSearch = async () => {
+                const searchTerm = searchInput.value.toLowerCase();
+                try {
+                    // Update URL with search term
+                    const url = new URL(window.location);
+                    if (searchTerm) {
+                        url.searchParams.set('search', searchTerm);
+                    } else {
+                        url.searchParams.delete('search');
+                    }
+                    window.history.pushState({}, '', url);
+
+                    if (!searchTerm) {
+                        // If search is empty, just load all saved games
+                        await this.loadSavedGames();
+                        return;
+                    }
+
+                    // Make API call to search endpoint
+                    const response = await fetch(`${GameConstants.Api.Endpoints.SAVED}/search?term=${encodeURIComponent(searchTerm)}`);
+                    if (!response.ok) throw new Error('Failed to search saved games');
+                    
+                    const searchResults = await response.json();
+                    this.renderSavedGames(searchResults);
+                } catch (error) {
+                    console.error('Error searching saved games:', error);
+                    uiManager.showErrorMessage('Failed to search saved games');
+                }
+            };
+
+            // Add click event to search button
+            searchButton.addEventListener('click', performSearch);
+
+            // Add enter key press event to search input
+            searchInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    performSearch();
+                }
+            });
+
+            // Check for search term in URL on page load
+            const url = new URL(window.location);
+            const searchTerm = url.searchParams.get('search');
+            if (searchTerm) {
+                searchInput.value = searchTerm;
+                performSearch();
+            }
         }
     }
 

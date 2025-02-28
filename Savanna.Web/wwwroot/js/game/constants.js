@@ -14,7 +14,8 @@ const GameConstants = {
             ANIMAL_TYPES: '/api/games/animal-types',
             LOGIN: '/Account/Login',
             DELETE_SAVE: (id) => `/api/games/saved/${id}`,
-            LOAD_SAVE: (id) => `/api/games/load/${id}`
+            LOAD_SAVE: (id) => `/api/games/load/${id}`,
+            SEARCH_SAVES: (term) => `/api/games/saved/search?term=${encodeURIComponent(term)}`
         },
         Methods: {
             GET: 'GET',
@@ -302,5 +303,14 @@ const GameConstants = {
         GAME_STATE: '/api/games/state',
         UPDATE_GAME: '/api/games/update',
         LOGIN: '/Account/Login'
+    },
+
+    Health: {
+        MaxHealth: {
+            LION: 20,
+            ANTELOPE: 20,
+            TIGER: 20,
+            ZEBRA: 20
+        }
     }
 }; 

@@ -1,0 +1,514 @@
+:root {
+    --savanna-brown: #8B4513;
+    --savanna-sand: #F4A460;
+    --savanna-grass: #90EE90;
+    --savanna-sky: #87CEEB;
+    --savanna-sunset: #FFA07A;
+    --savanna-light-brown: #DEB887;
+    --savanna-dark-brown: #654321;
+}
+
+html {
+    height: 100%;
+}
+
+body {
+    min-height: 100vh;
+    background-image: url('/images/safary_02.jpg') !important;
+    background-size: cover !important;
+    background-position: center !important;
+    background-attachment: fixed !important;
+    background-repeat: no-repeat !important;
+    position: relative;
+}
+
+/* Add an overlay to ensure text readability */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.2);
+    z-index: 0;
+}
+
+/* Ensure content stays above the overlay */
+.container, .container-fluid {
+    position: relative;
+    z-index: 1;
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: 15px;
+    padding: 2rem;
+    margin: 2rem auto;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+/* Card headers and titles */
+.card {
+    background-color: rgba(255, 255, 255, 0.9);
+}
+
+.card.game-container {
+    background-color: transparent !important;
+}
+
+.card-header {
+    background-color: var(--savanna-light-brown) !important;
+    border-bottom: 2px solid var(--savanna-brown) !important;
+    padding: 0.75rem 1rem !important;
+}
+
+.card-title {
+    color: var(--savanna-dark-brown) !important;
+    font-weight: 700 !important;
+    font-size: 1.1rem !important;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    text-shadow: 1px 1px 1px rgba(255, 255, 255, 0.5);
+}
+
+/* Buttons */
+.btn {
+    font-weight: 600 !important;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 0.5rem 1rem;
+    transition: all 0.3s ease;
+}
+
+.btn i, .btn span.emoji {
+    margin-right: 0.5rem;
+    font-size: 1.1em;
+}
+
+.btn-primary {
+    background-color: var(--savanna-brown) !important;
+    border-color: var(--savanna-dark-brown) !important;
+    color: white !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.btn-primary:hover {
+    background-color: var(--savanna-dark-brown) !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+}
+
+.btn-outline-primary {
+    color: var(--savanna-brown) !important;
+    border-color: var(--savanna-brown) !important;
+    border-width: 2px !important;
+    background-color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.btn-outline-primary:hover {
+    color: white !important;
+    background-color: var(--savanna-brown) !important;
+    transform: translateY(-1px);
+}
+
+.btn-success {
+    background-color: #2E8B57 !important;
+    border-color: #1B5233 !important;
+    color: white !important;
+}
+
+.btn-success:hover {
+    background-color: #1B5233 !important;
+}
+
+.btn-warning {
+    background-color: #CD853F !important;
+    border-color: #8B5A2B !important;
+    color: white !important;
+}
+
+.btn-warning:hover {
+    background-color: #8B5A2B !important;
+}
+
+.btn-danger {
+    background-color: #B22222 !important;
+    border-color: #8B0000 !important;
+    color: white !important;
+}
+
+.btn-danger:hover {
+    background-color: #8B0000 !important;
+}
+
+/* Game controls */
+.btn-group {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    gap: 2px;
+}
+
+.btn-group .btn {
+    border-color: var(--savanna-brown) !important;
+    font-weight: 600 !important;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 0.85rem;
+    padding: 0.4rem 0.75rem;
+}
+
+.btn-group .btn i {
+    font-size: 0.9rem;
+    margin-right: 0.3rem;
+}
+
+.btn-group .btn-check:checked + .btn-outline-primary {
+    background-color: var(--savanna-brown) !important;
+    color: white !important;
+}
+
+/* Animal buttons */
+.animal-btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    padding: 0.4rem 0.75rem;
+    margin: 0.15rem;
+    min-width: 120px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-width: 1px;
+    transition: all 0.3s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    font-size: 0.85rem;
+}
+
+.animal-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.animal-btn .animal-icon {
+    font-size: 1.1rem;
+    margin-right: 0.4rem;
+}
+
+.animal-btn .animal-text {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-right: 0.4rem;
+}
+
+/* Animal-specific button styles */
+.animal-btn.lion {
+    background-color: #CD853F !important;
+    border-color: #8B5A2B !important;
+    color: white !important;
+}
+
+.animal-btn.antelope {
+    background-color: var(--savanna-grass) !important;
+    border-color: #2E8B57 !important;
+    color: #1B5233 !important;
+}
+
+.animal-btn.tiger {
+    background-color: #FFA500 !important;
+    border-color: #CD853F !important;
+    color: white !important;
+}
+
+.animal-btn.zebra {
+    background-color: #E6E6FA !important;
+    border-color: #483D8B !important;
+    color: #483D8B !important;
+}
+
+/* Game statistics */
+.list-group-item {
+    background-color: transparent !important;
+    border-color: var(--savanna-light-brown) !important;
+    font-weight: 500;
+    color: var(--savanna-dark-brown);
+    padding: 0.75rem 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.list-group-item .badge {
+    font-size: 1rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 20px;
+}
+
+/* Rest of your existing styles... */
+.form-floating {
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: 8px;
+    margin-bottom: 1rem !important;
+}
+
+.form-control {
+    border-color: var(--savanna-brown) !important;
+}
+
+.form-control:focus {
+    border-color: var(--savanna-sunset) !important;
+    box-shadow: 0 0 0 0.25rem rgba(139, 69, 19, 0.25) !important;
+}
+
+.auth-container {
+    background-color: rgba(255, 255, 255, 0.8);
+    border-radius: 15px;
+    padding: 2rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    max-width: 500px;
+    margin: 2rem auto;
+}
+
+.auth-title {
+    color: var(--savanna-brown);
+    text-align: center;
+    margin-bottom: 1.5rem;
+    font-size: 2rem;
+}
+
+.auth-subtitle {
+    color: var(--savanna-brown);
+    text-align: center;
+    margin-bottom: 2rem;
+    font-size: 1.2rem;
+}
+
+.auth-emoji {
+    font-size: 2.5rem;
+    text-align: center;
+    margin-bottom: 1rem;
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.auth-link {
+    color: var(--savanna-brown) !important;
+    text-decoration: none;
+}
+
+.auth-link:hover {
+    color: var(--savanna-sunset) !important;
+    text-decoration: underline;
+}
+
+/* Remove the game grid styles that might interfere */
+.game-grid {
+    background-color: transparent !important;
+    border: none !important;
+}
+
+.game-cell {
+    background-color: transparent !important;
+    border: none !important;
+}
+
+.game-cell.selected {
+    background-color: rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Saved Games */
+.saved-game-item {
+    padding: 1rem;
+    border-bottom: 1px solid var(--savanna-light-brown);
+    transition: background-color 0.2s ease;
+}
+
+.saved-game-item:last-child {
+    border-bottom: none;
+}
+
+.saved-game-item:hover {
+    background-color: rgba(255, 255, 255, 0.5);
+}
+
+.saved-game-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.saved-game-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--savanna-dark-brown);
+    margin: 0;
+}
+
+.saved-game-date {
+    font-size: 0.85rem;
+    color: #666;
+}
+
+.saved-game-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: center;
+    margin: 0.5rem 0;
+    font-size: 0.9rem;
+    color: var(--savanna-brown);
+}
+
+.saved-game-controls {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.saved-game-controls .btn {
+    padding: 0.25rem 0.75rem;
+    font-size: 0.9rem;
+}
+
+.saved-game-controls .btn-outline-primary {
+    background-color: transparent;
+}
+
+.saved-game-controls .btn-outline-danger {
+    color: #dc3545;
+    border-color: #dc3545;
+    background-color: transparent;
+}
+
+.saved-game-controls .btn-outline-danger:hover {
+    color: white;
+    background-color: #dc3545;
+}
+
+/* Animal Details */
+.stat-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: 1px solid var(--savanna-light-brown);
+    transition: background-color 0.2s ease;
+}
+
+.stat-item:last-child {
+    border-bottom: none;
+}
+
+.stat-item:hover {
+    background-color: rgba(255, 255, 255, 0.5);
+}
+
+.stat-label {
+    font-weight: 600;
+    color: var(--savanna-dark-brown);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 0.9rem;
+}
+
+.stat-value {
+    font-weight: 500;
+    color: var(--savanna-brown);
+    font-size: 1rem;
+    padding: 0.25rem 0.75rem;
+    background-color: rgba(255, 255, 255, 0.5);
+    border-radius: 20px;
+    min-width: 60px;
+    text-align: center;
+}
+
+.stat-value.health {
+    position: relative;
+    background: linear-gradient(to right, var(--savanna-grass) var(--health-percentage), rgba(255, 255, 255, 0.5) var(--health-percentage));
+    color: var(--savanna-dark-brown);
+}
+
+.stat-value.species {
+    background-color: var(--species-color, rgba(255, 255, 255, 0.5));
+    color: var(--species-text-color, var(--savanna-dark-brown));
+}
+
+.stat-value.species.antelope {
+    --species-color: var(--savanna-grass);
+    --species-text-color: #1B5233;
+}
+
+.stat-value.species.lion {
+    --species-color: #CD853F;
+    --species-text-color: white;
+}
+
+.stat-value.species.tiger {
+    --species-color: #FFA500;
+    --species-text-color: white;
+}
+
+.stat-value.species.zebra {
+    --species-color: #E6E6FA;
+    --species-text-color: #483D8B;
+}
+
+/* Saved Games Search */
+.input-group {
+    max-width: 300px;
+}
+
+.input-group-text {
+    background-color: var(--savanna-light-brown);
+    border-color: var(--savanna-brown);
+    color: var(--savanna-dark-brown);
+}
+
+#savedGamesSearch {
+    border-color: var(--savanna-brown);
+    background-color: rgba(255, 255, 255, 0.9);
+}
+
+#savedGamesSearch:focus {
+    box-shadow: 0 0 0 0.25rem rgba(139, 69, 19, 0.25);
+    border-color: var(--savanna-brown);
+}
+
+/* Saved Games Container */
+.saved-games-container {
+    max-height: calc(100vh - 500px);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--savanna-brown) var(--savanna-light-brown);
+}
+
+.saved-games-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+.saved-games-container::-webkit-scrollbar-track {
+    background: var(--savanna-light-brown);
+    border-radius: 4px;
+}
+
+.saved-games-container::-webkit-scrollbar-thumb {
+    background-color: var(--savanna-brown);
+    border-radius: 4px;
+    border: 2px solid var(--savanna-light-brown);
+}
+
+/* Filter Buttons */
+#filterButtons .btn {
+    font-size: 0.85rem;
+    padding: 0.25rem 0.75rem;
+    border-width: 1px;
+}
+
+#filterButtons .btn.active {
+    background-color: var(--savanna-brown);
+    color: white;
+}
+
+/* Add Animals section */
+#animalControls {
+    gap: 0.3rem !important;
+} 

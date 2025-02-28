@@ -49,13 +49,7 @@ class GameControls {
             gameState.gameActive = true;
             uiManager.enableGameControls();
 
-            // Add initial animals without starting polling
-            console.log('Adding initial animals...');
-            await animalManager.addAnimal(GameConstants.Animals.Types.LION, true);
-            await animalManager.addAnimal(GameConstants.Animals.Types.ANTELOPE, true);
-            console.log('Initial animals added successfully');
-
-            // Start polling after initial animals are added
+            // Start polling immediately without adding initial animals
             gameState.startGameStatePolling();
         } catch (error) {
             console.error('Error starting game:', error);

@@ -5,6 +5,9 @@
     ViewData["Title"] = "Savanna Game";
 }
 
+<link rel="stylesheet" href="~/css/savanna-theme.css" />
+<link rel="stylesheet" href="~/css/game-styles.css" />
+
 <div class="container-fluid py-4">
     <!-- User Authentication Status -->
     <div class="mb-4">
@@ -12,9 +15,6 @@
         {
             <div class="d-flex justify-content-between align-items-center">
                 <span>Welcome, @User.Identity.Name!</span>
-                <form method="post" asp-page="/Account/Logout">
-                    <button type="submit" class="btn btn-outline-secondary btn-sm">Logout</button>
-                </form>
             </div>
         }
         else
@@ -43,21 +43,21 @@
                 <div class="card-header">
                     <h5 class="card-title mb-0">Game Controls</h5>
                 </div>
-                <div class="card-body">
-                    <div class="d-flex flex-column gap-3">
+                <div class="card-body py-2">
+                    <div class="d-flex flex-column gap-2">
                         <div class="d-flex justify-content-between align-items-center">
                             <div class="btn-group" role="group">
                                 <button id="startGame" class="btn btn-success">
-                                    <i class="bi bi-play-fill"></i> Start Game
+                                    <i class="bi bi-play-fill"></i>Start
                                 </button>
                                 <button id="pauseGame" class="btn btn-warning" disabled>
-                                    <i class="bi bi-pause-fill"></i> Pause Game
+                                    <i class="bi bi-pause-fill"></i>Pause
                                 </button>
                                 <button id="quitGame" class="btn btn-danger" disabled>
-                                    <i class="bi bi-x-circle"></i> Quit Game
+                                    <i class="bi bi-x-circle"></i>Quit
                                 </button>
                                 <button id="saveGame" class="btn btn-primary" disabled>
-                                    <i class="bi bi-save"></i> Save Game
+                                    <i class="bi bi-save"></i>Save
                                 </button>
                             </div>
                             <div class="btn-group" role="group">
@@ -68,8 +68,8 @@
                             </div>
                         </div>
                         <div>
-                            <h6 class="mb-2">Add Animals</h6>
-                            <div id="animalControls" class="d-flex gap-2 flex-wrap">
+                            <h6 class="mb-2 small text-muted">Add Animals</h6>
+                            <div id="animalControls" class="d-flex flex-wrap">
                                 <!-- Animal buttons will be added here dynamically -->
                             </div>
                         </div>
@@ -78,10 +78,35 @@
             </div>
 
             <!-- Game Grid -->
-            <div class="card">
+            <div class="card game-container">
                 <div class="card-body p-0">
-                    <div id="gameGrid" class="game-grid position-relative">
+                    <div id="gameGrid" class="game-grid">
                         <!-- Game grid will be rendered here by JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add this right after the Game Grid card -->
+            <div class="card mt-4" id="animalDetails">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Selected Animal Details</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="stat-item">
+                        <span class="stat-label">Species</span>
+                        <span id="animalType" class="stat-value species">-</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Age</span>
+                        <span id="animalAge" class="stat-value">-</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Health</span>
+                        <span id="animalHealth" class="stat-value health">-</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Offspring</span>
+                        <span id="animalOffspring" class="stat-value">-</span>
                     </div>
                 </div>
             </div>
@@ -103,14 +128,30 @@
 
             <!-- Saved Games -->
             <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
+                <div class="card-header">
                     <h5 class="card-title mb-0">Saved Games</h5>
-                    <button id="refreshSaves" class="btn btn-sm btn-outline-secondary">
-                        <i class="bi bi-arrow-clockwise"></i> Refresh
-                    </button>
+                    <div class="d-flex flex-column gap-2 mt-2">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bi bi-search"></i>
+                                </span>
+                                <input type="text" id="savedGamesSearch" class="form-control" placeholder="Search saved games...">
+                            </div>
+                            <button id="refreshSaves" class="btn btn-sm btn-outline-secondary ms-2">
+                                <i class="bi bi-arrow-clockwise"></i> Refresh
+                            </button>
+                        </div>
+                        <div class="d-flex gap-2 flex-wrap" id="filterButtons">
+                            <button class="btn btn-sm btn-outline-primary active" data-filter="all">All</button>
+                            <button class="btn btn-sm btn-outline-primary" data-filter="today">Today</button>
+                            <button class="btn btn-sm btn-outline-primary" data-filter="week">This Week</button>
+                            <button class="btn btn-sm btn-outline-primary" data-filter="month">This Month</button>
+                        </div>
+                    </div>
                 </div>
                 <div class="card-body p-0">
-                    <div id="savedGames" class="list-group list-group-flush">
+                    <div id="savedGames" class="list-group list-group-flush saved-games-container">
                         <!-- Saved games will be loaded here dynamically -->
                     </div>
                 </div>
@@ -118,42 +159,6 @@
         </div>
     </div>
 </div>
-
-@section Styles {
-    <style>
-        .game-grid {
-            aspect-ratio: 1;
-            background-color: #f8f9fa;
-            border: 1px solid #dee2e6;
-            display: grid;
-            gap: 1px;
-            padding: 1px;
-        }
-
-        .game-cell {
-            background-color: white;
-            border: 1px solid #e9ecef;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.25rem;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .game-cell.lion { color: #dc3545; }
-        .game-cell.antelope { color: #198754; }
-        .game-cell.tiger { color: #fd7e14; }
-        .game-cell.zebra { color: #6c757d; }
-
-        @@media (min-width: 768px) {
-            .game-grid {
-                max-width: 800px;
-                margin: 0 auto;
-            }
-        }
-    </style>
-}
 
 @section Scripts {
     <script src="~/js/game/constants.js"></script>

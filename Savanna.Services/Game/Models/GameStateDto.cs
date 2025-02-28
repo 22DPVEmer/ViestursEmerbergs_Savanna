@@ -19,11 +19,12 @@ namespace Savanna.Services.Game.Models
         public int Health { get; set; }
         public bool IsAlive { get; set; }
         public bool IsSelected { get; set; }
+        public int Age { get; set; }
+        public int OffspringCount { get; set; }
     }
 
     public class AnimalDetailsDto : AnimalDto
     {
-        public int Age { get; set; }
-        public int OffspringCount { get; set; }
+        // These properties are now inherited from AnimalDto
     }
 } 

@@ -10,7 +10,7 @@ public class AnimalState
     public IGameEntity Entity { get; }
     public int Age { get; set; }
     public int OffspringCount { get; set; }
-
+    public int CreationIteration { get; set; }
     public AnimalState(IGameEntity entity)
     {
         Entity = entity;

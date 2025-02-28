@@ -61,9 +61,30 @@ class AnimalManager {
                 animalTypes.forEach(type => {
                     const button = document.createElement('button');
                     button.id = `add${type}`;
-                    button.className = GameConstants.UI.Elements.Classes.BUTTON.replace('{0}', uiManager.animalColors[type]);
+                    button.className = `btn animal-btn ${type.toLowerCase()} ${GameConstants.UI.Elements.Classes.BUTTON.replace('{0}', GameConstants.Animals.Colors[type.toUpperCase()])}`;
                     button.disabled = true;
-                    button.innerHTML = `${GameConstants.UI.Elements.Icons.ADD} ${GameConstants.UI.Messages.Buttons.ADD_ANIMAL(type)}`;
+
+                    // Create icon span
+                    const iconSpan = document.createElement('span');
+                    iconSpan.className = 'animal-icon';
+                    iconSpan.textContent = GameConstants.Animals.Icons[type.toUpperCase()];
+                    
+                    // Create text span
+                    const textSpan = document.createElement('span');
+                    textSpan.className = 'animal-text';
+                    textSpan.textContent = GameConstants.Animals.Text[type.toUpperCase()];
+                    textSpan.style.display = 'none'; // Hide text by default
+                    
+                    // Create label span
+                    const labelSpan = document.createElement('span');
+                    labelSpan.className = 'ms-2';
+                    labelSpan.textContent = `Add ${type}`;
+
+                    // Add all elements to button
+                    button.appendChild(iconSpan);
+                    button.appendChild(textSpan);
+                    button.appendChild(labelSpan);
+
                     button.addEventListener('click', () => {
                         if (gameState.gameActive) {
                             this.addAnimal(type).catch(error => {
@@ -72,6 +93,32 @@ class AnimalManager {
                         }
                     });
                     buttonContainer.appendChild(button);
+                });
+
+                // Add display mode change handler
+                const displayModeHandler = (mode) => {
+                    const iconElements = document.querySelectorAll('.animal-icon');
+                    const textElements = document.querySelectorAll('.animal-text');
+                    
+                    if (mode === 'icons') {
+                        iconElements.forEach(el => el.style.display = '');
+                        textElements.forEach(el => el.style.display = 'none');
+                    } else {
+                        iconElements.forEach(el => el.style.display = 'none');
+                        textElements.forEach(el => el.style.display = '');
+                    }
+                };
+
+                // Set initial display mode
+                displayModeHandler(gameState.displayMode || 'icons');
+
+                // Listen for display mode changes
+                document.querySelectorAll('input[name="displayMode"]').forEach(input => {
+                    input.addEventListener('change', (e) => {
+                        if (!gameState.gameActive) {
+                            displayModeHandler(e.target.id === 'iconMode' ? 'icons' : 'text');
+                        }
+                    });
                 });
             }
         } catch (error) {
