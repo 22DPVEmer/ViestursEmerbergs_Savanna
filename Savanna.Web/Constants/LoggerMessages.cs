@@ -22,6 +22,9 @@ namespace Savanna.Web.Constants
         public const string ErrorTogglingGamePause = "Error toggling game pause state";
         public const string ErrorRetrievingAnimalTypes = "Error retrieving animal types";
         public const string ErrorDeletingSave = "Error deleting save {SaveId}";
+        public const string SearchingSavedGames = "Searching saved games for user {UserId} with term: {Term}";
+        public const string FoundSearchResults = "Found {Count} games matching search term for user {UserId}";
+        public const string ErrorSearchingSavedGames = "Error searching saved games for user {UserId}";
     }
 
     public static class ResponseMessages

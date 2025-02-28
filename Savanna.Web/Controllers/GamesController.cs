@@ -7,11 +7,13 @@ using Microsoft.Extensions.Logging;
 using Savanna.Services.Services;
 using Savanna.Web.Constants;
 using Savanna.Services.Constants;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Savanna.Web.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class GamesController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
@@ -27,20 +29,7 @@ namespace Savanna.Web.Controllers
 
         private string GetUserId()
         {
-            // If authenticated, use the user's name
-            if (User.Identity?.IsAuthenticated == true)
-            {
-                return User.Identity.Name!;
-            }
-
-            // For anonymous users, try to get or create a session ID
-            var sessionId = HttpContext.Session.GetString("AnonymousUserId");
-            if (string.IsNullOrEmpty(sessionId))
-            {
-                sessionId = Guid.NewGuid().ToString();
-                HttpContext.Session.SetString("AnonymousUserId", sessionId);
-            }
-            return sessionId;
+            return User.Identity!.Name!;
         }
 
         [HttpGet("saved")]
@@ -51,21 +40,16 @@ namespace Savanna.Web.Controllers
                 var userId = GetUserId();
                 _logger.LogInformation(LoggerMessages.RetrievingSavedGames, userId);
 
-                // Get the actual user ID if authenticated
-                string actualUserId = userId;
-                if (User.Identity?.IsAuthenticated == true)
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.UserName == userId);
+                if (user == null)
                 {
-                    var user = await _context.Users.FirstOrDefaultAsync(u => u.UserName == userId);
-                    if (user != null)
-                    {
-                        actualUserId = user.Id;
-                    }
+                    return NotFound(new { message = "User not found" });
                 }
 
                 var games = await _context.GameSaves
                     .Include(g => g.GameState)
                     .ThenInclude(s => s.Animals)
-                    .Where(g => g.UserId == actualUserId)
+                    .Where(g => g.UserId == user.Id)
                     .Select(g => new
                     {
                         g.Id,
@@ -292,22 +276,16 @@ namespace Savanna.Web.Controllers
             try
             {
                 var userId = GetUserId();
-                
-                // Get the actual user ID if authenticated
-                string actualUserId = userId;
-                if (User.Identity?.IsAuthenticated == true)
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.UserName == userId);
+                if (user == null)
                 {
-                    var user = await _context.Users.FirstOrDefaultAsync(u => u.UserName == userId);
-                    if (user != null)
-                    {
-                        actualUserId = user.Id;
-                    }
+                    return NotFound(new { message = "User not found" });
                 }
 
                 // Find the save and its associated state
                 var save = await _context.GameSaves
                     .Include(g => g.GameState)
-                    .FirstOrDefaultAsync(g => g.Id == saveId && g.UserId == actualUserId);
+                    .FirstOrDefaultAsync(g => g.Id == saveId && g.UserId == user.Id);
 
                 if (save == null)
                 {
@@ -335,17 +313,12 @@ namespace Savanna.Web.Controllers
             try
             {
                 var userId = GetUserId();
-                _logger.LogInformation("Searching saved games for user {UserId} with term: {Term}", userId, term);
+                _logger.LogInformation(LoggerMessages.SearchingSavedGames, userId, term);
 
-                // Get the actual user ID if authenticated
-                string actualUserId = userId;
-                if (User.Identity?.IsAuthenticated == true)
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.UserName == userId);
+                if (user == null)
                 {
-                    var user = await _context.Users.FirstOrDefaultAsync(u => u.UserName == userId);
-                    if (user != null)
-                    {
-                        actualUserId = user.Id;
-                    }
+                    return NotFound(new { message = "User not found" });
                 }
 
                 var searchTerm = term?.ToLower() ?? "";
@@ -353,7 +326,15 @@ namespace Savanna.Web.Controllers
                 var games = await _context.GameSaves
                     .Include(g => g.GameState)
                     .ThenInclude(s => s.Animals)
-                    .Where(g => g.UserId == actualUserId)
+                    .Where(g => g.UserId == user.Id && (
+                        string.IsNullOrEmpty(searchTerm) || 
+                        g.SaveDate.ToString().ToLower().Contains(searchTerm) ||
+                        g.GameState.CurrentIteration.ToString().Contains(searchTerm) ||
+                        g.GameState.Animals.Count(a => a.AnimalType == GameConstants.AnimalTypes.Lion && a.IsAlive).ToString().Contains(searchTerm) ||
+                        g.GameState.Animals.Count(a => a.AnimalType == GameConstants.AnimalTypes.Antelope && a.IsAlive).ToString().Contains(searchTerm) ||
+                        g.GameState.Animals.Count(a => a.AnimalType == GameConstants.AnimalTypes.Tiger && a.IsAlive).ToString().Contains(searchTerm) ||
+                        g.GameState.Animals.Count(a => a.AnimalType == GameConstants.AnimalTypes.Zebra && a.IsAlive).ToString().Contains(searchTerm)
+                    ))
                     .Select(g => new
                     {
                         g.Id,
@@ -368,22 +349,15 @@ namespace Savanna.Web.Controllers
                             Zebra = g.GameState.Animals.Count(a => a.AnimalType == GameConstants.AnimalTypes.Zebra && a.IsAlive)
                         }
                     })
-                    .Where(g => 
-                        g.SaveDate.ToString().ToLower().Contains(searchTerm) ||
-                        g.Iteration.ToString().Contains(searchTerm) ||
-                        g.AnimalCounts.Lion.ToString().Contains(searchTerm) ||
-                        g.AnimalCounts.Antelope.ToString().Contains(searchTerm) ||
-                        g.AnimalCounts.Tiger.ToString().Contains(searchTerm) ||
-                        g.AnimalCounts.Zebra.ToString().Contains(searchTerm))
                     .OrderByDescending(g => g.SaveDate)
                     .ToListAsync();
 
-                _logger.LogInformation("Found {Count} games matching search term for user {UserId}", games.Count, userId);
+                _logger.LogInformation(LoggerMessages.FoundSearchResults, games.Count, userId);
                 return Ok(games);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error searching saved games for user {UserId}", GetUserId());
+                _logger.LogError(ex, LoggerMessages.ErrorSearchingSavedGames, GetUserId());
                 return StatusCode(500, new { message = "Failed to search saved games: " + ex.Message });
             }
         }
