@@ -14,7 +14,6 @@
     <ProjectReference Include="..\Savanna.Plugins\Savanna.Plugins.csproj" />
   </ItemGroup>
 
-  <!-- Add post-build event to copy plugin to web app -->
   <Target Name="CopyPluginToWeb" AfterTargets="Build">
     <PropertyGroup>
       <PluginDestination>..\Savanna.Web\bin\Debug\net8.0\Plugins</PluginDestination>
@@ -22,6 +21,16 @@
     <Message Text="Copying Zebra plugin to: $(PluginDestination)" Importance="high" />
     <Copy SourceFiles="$(OutDir)$(AssemblyName).dll" DestinationFolder="$(PluginDestination)" />
     <Copy SourceFiles="$(OutDir)$(AssemblyName).pdb" DestinationFolder="$(PluginDestination)" Condition="Exists('$(OutDir)$(AssemblyName).pdb')" />
+  </Target>
+
+  <Target Name="CopyPluginToConsole" AfterTargets="Build">
+    <PropertyGroup>
+      <ConsolePluginDestination>..\Savanna.ConsoleApp\bin\Debug\net8.0\Plugins</ConsolePluginDestination>
+    </PropertyGroup>
+    <Message Text="Copying Zebra plugin to: $(ConsolePluginDestination)" Importance="high" />
+    <Copy SourceFiles="$(OutDir)$(AssemblyName).dll" DestinationFolder="$(ConsolePluginDestination)" />
+    <Copy SourceFiles="$(OutDir)$(AssemblyName).pdb" DestinationFolder="$(ConsolePluginDestination)" Condition="Exists('$(OutDir)$(AssemblyName).pdb')" />
+    <Copy SourceFiles="$(OutDir)config.json" DestinationFolder="$(ConsolePluginDestination)" Condition="Exists('$(OutDir)config.json')" />
   </Target>
 
 </Project>
