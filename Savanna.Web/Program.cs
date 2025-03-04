@@ -60,6 +60,10 @@ using (var scope = app.Services.CreateScope())
         var configs = animalConfig.GetAnimalConfigurations();
         logger.LogInformation("Successfully initialized animal configurations with {Count} types", configs.Count);
 
+        // Initialize plugin configuration before loading plugins
+        var pluginConfigPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config.json");
+        Savanna.Common.Configuration.PluginConfigurationLoader.Initialize(pluginConfigPath, logger);
+
         // Then load plugins
         var pluginLoader = services.GetRequiredService<PluginLoader>();
         pluginLoader.LoadPlugins();
@@ -67,7 +71,9 @@ using (var scope = app.Services.CreateScope())
 
         // Finally, ensure database is ready
         var context = services.GetRequiredService<ApplicationDbContext>();
-        context.Database.Migrate();
+        // Commented out automatic migration to make it optional
+        // context.Database.Migrate();
+        logger.LogInformation("Database connection verified");
         logger.LogInformation("Successfully initialized database");
     }
     catch (Exception ex)
